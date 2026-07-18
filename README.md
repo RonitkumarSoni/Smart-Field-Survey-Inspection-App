@@ -1,50 +1,106 @@
-# Welcome to your Expo app 👋
+# Smart Field Survey & Inspection App 📱📍
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A comprehensive and modern **React Native** application built with **Expo**, designed for field agents and surveyors to easily collect data, capture images, record locations, and manage inspection surveys efficiently. 
 
-## Get started
+---
 
-1. Install dependencies
+## 🌟 Key Features
 
+### 1. 📊 Dashboard
+- Welcome screen with user details.
+- Real-time today's survey count.
+- Quick action cards to easily navigate to new surveys, camera, contacts, and location.
+- Summary of recent surveys.
+
+### 2. 📝 Create Survey
+- Simple and intuitive form to collect: Site Name, Client Name, Description, Priority (High/Medium/Low), and Date.
+- Built-in validation for required fields.
+
+### 3. 📸 Camera Module
+- Integrated `expo-camera` to capture site photos.
+- Flash toggle, camera flip (front/back), and permission handling.
+- Live timestamp overlay on captured photos.
+- Options to retake or delete photos with a confirmation alert.
+
+### 4. 🗺️ Location Module
+- Integrated `expo-location` to fetch real-time GPS coordinates.
+- Displays exact Latitude, Longitude, and Accuracy.
+- Embedded map view for visual location tracking.
+- One-tap copy to clipboard for easy sharing.
+
+### 5. 👥 Contacts Module
+- Integrated `expo-contacts` to fetch and view device contacts.
+- Quick search functionality.
+- Tap a contact to copy their phone number to the clipboard.
+- Pull-to-refresh functionality and neat contact avatars.
+
+### 6. 📋 Clipboard Utilities
+- Integrated `expo-clipboard` to copy Survey IDs, Contact Numbers, and Locations easily.
+- Test pasting functionality and an option to clear clipboard data.
+
+### 7. 🔍 Survey History & Preview
+- Comprehensive list of all created surveys.
+- Search surveys by Site or Client Name (Case-insensitive).
+- **Filter by Priority** (All, High, Medium, Low).
+- Detailed preview screen showing all survey data including Map and Photo.
+- Edit or delete surveys with safety confirmation alerts.
+
+### 8. 🧭 Navigation
+- Seamless navigation powered by **Expo Router**.
+- **Bottom Tabs**: Dashboard, New Survey, History, Profile.
+- **Drawer Navigation**: Access to modules like Camera, Location, Contacts, Clipboard, and Settings.
+
+---
+
+## 🛠️ Tech Stack & APIs Used
+
+- **Framework:** React Native, Expo
+- **Navigation:** Expo Router, React Navigation (Drawer & Tabs)
+- **State Management:** React Context API
+- **Expo APIs:**
+  - `expo-camera`
+  - `expo-location`
+  - `expo-contacts`
+  - `expo-clipboard`
+- **UI Components:** React Native standard components (`View`, `Text`, `FlatList`, `ScrollView`, etc.)
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+Make sure you have [Node.js](https://nodejs.org/) installed along with the Expo CLI.
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/RonitkumarSoni/Smart-Field-Survey-Inspection-App.git
+   cd Smart-Field-Survey-Inspection-App
+   ```
+
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. **Start the Expo server:**
    ```bash
+   npm start
+   # or
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. **Run the app:**
+   - Scan the generated QR code using the **Expo Go** app on your physical device (Android/iOS).
+   - Alternatively, press `a` for Android Emulator, `i` for iOS Simulator, or `w` to run on the web.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🤝 Contribution
 
-## Get a fresh project
+Feel free to fork the repository, make your enhancements, and submit a pull request! Any contributions to improve the UI/UX or add features (like backend sync or local database storage) are highly appreciated.
 
-When you're ready, run:
+## 📄 License
 
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+This project is open-source and available under the [MIT License](LICENSE).
