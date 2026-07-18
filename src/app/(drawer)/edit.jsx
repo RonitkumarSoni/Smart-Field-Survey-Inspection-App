@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Text, TextInput, Pressable, ScrollView, Alert, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import { useSurveys } from '../../../context/SurveyContext'
+import { useSurveys } from '../../context/SurveyContext'
 
-export default function CreateSurvey() {
+export default function EditSurvey() {
   const router = useRouter()
-  const { addSurvey } = useSurveys()
+  const { currentSurvey, updateSurvey, setCurrentSurvey } = useSurveys()
 
   const [siteName, setSiteName] = useState('')
   const [clientName, setClientName] = useState('')
@@ -13,40 +13,54 @@ export default function CreateSurvey() {
   const [priority, setPriority] = useState('Medium')
   const [date, setDate] = useState('')
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    if (currentSurvey) {
+        setSiteName(currentSurvey.siteName || '')
+        setClientName(currentSurvey.clientName || '')
+        setDescription(currentSurvey.description || '')
+        setPriority(currentSurvey.priority || 'Medium')
+        setDate(currentSurvey.date || '')
+    } else {
+        Alert.alert("Error", "No survey selected for editing.", [
+            { text: "Go Back", onPress: () => router.back() }
+        ])
+    }
+  }, [currentSurvey])
+
+  const handleUpdate = () => {
     if (siteName === '' || clientName === '' || date === '') {
       Alert.alert('Error', 'Site Name, Client Name and Date are required')
       return
     }
 
-    addSurvey({
-      siteName: siteName,
-      clientName: clientName,
-      description: description,
-      priority: priority,
-      date: date,
-      photo: null,
-      contactName: '',
-      contactPhone: '',
-      latitude: '',
-      longitude: '',
-    })
+    const updatedData = {
+      ...currentSurvey,
+      siteName,
+      clientName,
+      description,
+      priority,
+      date,
+    }
 
-    Alert.alert('Success', 'Survey created', [
-      { text: 'OK', onPress: () => router.push('/(drawer)/preview') }
+    if (updateSurvey) {
+      updateSurvey(currentSurvey.id, updatedData)
+    }
+    
+    if (setCurrentSurvey) {
+      setCurrentSurvey(updatedData)
+    }
+
+    Alert.alert('Success', 'Survey updated successfully', [
+      { text: 'OK', onPress: () => router.back() }
     ])
-
-    setSiteName('')
-    setClientName('')
-    setDescription('')
-    setPriority('Medium')
-    setDate('')
   }
+
+  if (!currentSurvey) return null;
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Create Survey</Text>
+        <Text style={styles.headerText}>Edit Survey</Text>
       </View>
 
       <View style={styles.form}>
@@ -91,9 +105,14 @@ export default function CreateSurvey() {
           onChangeText={setDate}
         />
 
-        <Pressable style={styles.submitBtn} onPress={handleSubmit}>
-          <Text style={styles.submitText}>Submit Survey</Text>
-        </Pressable>
+        <View style={styles.actionRow}>
+            <Pressable style={styles.cancelBtn} onPress={() => router.back()}>
+                <Text style={styles.submitText}>Cancel</Text>
+            </Pressable>
+            <Pressable style={styles.submitBtn} onPress={handleUpdate}>
+                <Text style={styles.submitText}>Update Survey</Text>
+            </Pressable>
+        </View>
       </View>
     </ScrollView>
   )
@@ -105,13 +124,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   header: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#ffc107',
     padding: 20,
     paddingTop: 15,
     alignItems: 'center',
   },
   headerText: {
-    color: 'white',
+    color: '#333',
     fontSize: 22,
     fontWeight: 'bold',
   },
@@ -138,6 +157,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 5,
   },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 25,
+  },
   btn: {
     borderWidth: 1,
     borderColor: '#007BFF',
@@ -161,12 +185,19 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '500',
   },
+  cancelBtn: {
+    backgroundColor: '#dc3545',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    width: '48%'
+  },
   submitBtn: {
     backgroundColor: '#28a745',
     padding: 14,
     borderRadius: 8,
-    marginTop: 25,
     alignItems: 'center',
+    width: '48%'
   },
   submitText: {
     color: 'white',

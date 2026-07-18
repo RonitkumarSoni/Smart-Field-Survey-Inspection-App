@@ -7,6 +7,7 @@ export default function SurveyHistory() {
   const router = useRouter()
   const { surveys, deleteSurvey, setCurrentSurvey } = useSurveys()
   const [searchText, setSearchText] = useState('')
+  const [filterPriority, setFilterPriority] = useState('All')
 
   const handleDelete = (id) => {
     Alert.alert(
@@ -25,7 +26,11 @@ export default function SurveyHistory() {
   }
 
   const renderSurveyItem = ({ item }) => {
-    if (searchText && !item.siteName.includes(searchText) && !item.clientName.includes(searchText)) {
+    if (searchText && !item.siteName.toLowerCase().includes(searchText.toLowerCase()) && !item.clientName.toLowerCase().includes(searchText.toLowerCase())) {
+      return null
+    }
+    
+    if (filterPriority !== 'All' && item.priority !== filterPriority) {
       return null
     }
 
@@ -57,10 +62,22 @@ export default function SurveyHistory() {
       <View style={styles.search}>
         <TextInput
           style={styles.input}
-          placeholder="Search..."
+          placeholder="Search by Site or Client..."
           value={searchText}
           onChangeText={setSearchText}
         />
+        <View style={styles.filterRow}>
+          <Text style={styles.filterLabel}>Priority: </Text>
+          {['All', 'High', 'Medium', 'Low'].map(p => (
+            <Pressable 
+              key={p} 
+              style={filterPriority === p ? styles.filterBtnActive : styles.filterBtn} 
+              onPress={() => setFilterPriority(p)}
+            >
+              <Text style={filterPriority === p ? styles.filterTextActive : styles.filterText}>{p}</Text>
+            </Pressable>
+          ))}
+        </View>
       </View>
 
       <FlatList
@@ -80,7 +97,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#007BFF',
     padding: 20,
-    paddingTop: 45,
+    paddingTop: 15,
     alignItems: 'center',
   },
   headerText: {
@@ -135,5 +152,37 @@ const styles = StyleSheet.create({
   btnText: {
     color: 'white',
     fontWeight: '600',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  filterLabel: {
+    fontWeight: 'bold',
+    marginRight: 10,
+  },
+  filterBtn: {
+    borderWidth: 1,
+    borderColor: '#007BFF',
+    borderRadius: 15,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    marginRight: 6,
+  },
+  filterBtnActive: {
+    backgroundColor: '#007BFF',
+    borderRadius: 15,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    marginRight: 6,
+  },
+  filterText: {
+    color: '#007BFF',
+    fontSize: 12,
+  },
+  filterTextActive: {
+    color: 'white',
+    fontSize: 12,
   }
 })

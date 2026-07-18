@@ -1,9 +1,12 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
   Button,
   Image,
+  Text,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import {
   CameraView,
@@ -16,12 +19,18 @@ const Camera = () => {
   const [facing, setFacing] = useState("back");
   const [photo, setPhoto] = useState(null);
   const [torch, setTorch] = useState(false);
+  const [captureTime, setCaptureTime] = useState("");
+  const [isCameraReady, setIsCameraReady] = useState(false);
 
   const [permission, requestPermission] =
     useCameraPermissions();
 
   if (!permission) {
-    return <View />;
+    return (
+      <View style={styles.permission}>
+        <ActivityIndicator size="large" color="#007BFF" />
+      </View>
+    );
   }
 
   if (!permission.granted) {
@@ -42,11 +51,26 @@ const Camera = () => {
 
         if (result) {
           setPhoto(result.uri);
+          setCaptureTime(new Date().toLocaleString());
         }
       } catch (error) {
         console.log(error);
       }
     }
+  };
+
+  const deletePhoto = () => {
+    Alert.alert("Delete Photo", "Are you sure you want to delete this photo?", [
+      { text: "Cancel", style: "cancel" },
+      { 
+        text: "Delete", 
+        style: "destructive", 
+        onPress: () => {
+          setPhoto(null);
+          setCaptureTime("");
+        } 
+      }
+    ]);
   };
 
   return (
@@ -56,7 +80,14 @@ const Camera = () => {
         style={styles.camera}
         facing={facing}
         enableTorch={torch}
+        onCameraReady={() => setIsCameraReady(true)}
       />
+
+      {!isCameraReady && !photo && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="white" />
+        </View>
+      )}
 
       <View style={styles.buttonContainer}>
         <Button
@@ -84,10 +115,18 @@ const Camera = () => {
       </View>
 
       {photo && (
-        <Image
-          source={{ uri: photo }}
-          style={styles.image}
-        />
+        <View style={styles.previewContainer}>
+          <Image
+            source={{ uri: photo }}
+            style={styles.image}
+          />
+          <View style={styles.timeOverlay}>
+            <Text style={styles.timeText}>{captureTime}</Text>
+          </View>
+          <View style={styles.deleteBtnContainer}>
+            <Button title="Delete Photo" color="#dc3545" onPress={deletePhoto} />
+          </View>
+        </View>
       )}
     </View>
   );
@@ -116,11 +155,40 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+
+  previewContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
   image: {
-    width: 150,
-    height: 150,
-    alignSelf: "center",
-    marginVertical: 15,
+    width: 250,
+    height: 250,
     borderRadius: 10,
   },
+
+  timeOverlay: {
+    position: "absolute",
+    bottom: 60,
+    right: 10,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  
+  timeText: {
+    color: "white",
+    fontSize: 12,
+  },
+
+  deleteBtnContainer: {
+    marginTop: 10,
+  }
 });

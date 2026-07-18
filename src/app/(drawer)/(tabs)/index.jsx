@@ -1,11 +1,14 @@
 import React from 'react'
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useNavigation } from 'expo-router'
+import { DrawerActions } from '@react-navigation/native'
+import { Ionicons } from '@expo/vector-icons'
 import { useSurveys } from '../../../context/SurveyContext'
 import { students } from '../../../data/students'
 
 export default function Dashboard() {
   const router = useRouter()
+  const navigation = useNavigation()
   const { surveys } = useSurveys()
   const student = students[0]
 
@@ -15,7 +18,14 @@ export default function Dashboard() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
+        <Pressable 
+          onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())} 
+          style={styles.menuIcon}
+        >
+          <Ionicons name="menu" size={28} color="white" />
+        </Pressable>
         <Text style={styles.headerText}>Dashboard</Text>
+        <View style={{ width: 28 }} />
       </View>
 
       <View style={styles.content}>
@@ -73,9 +83,15 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#007BFF',
-    padding: 20,
-    paddingTop: 45,
+    paddingHorizontal: 15,
+    paddingTop: 15, // Reduced padding
+    paddingBottom: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  menuIcon: {
+    padding: 5,
   },
   headerText: {
     color: 'white',

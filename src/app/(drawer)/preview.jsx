@@ -23,6 +23,10 @@ export default function SurveyPreview() {
     ])
   }
 
+  const handleEdit = () => {
+    router.push('/(drawer)/edit')
+  }
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Preview Survey</Text>
@@ -34,6 +38,21 @@ export default function SurveyPreview() {
         <Text style={styles.label}>Priority: {currentSurvey.priority}</Text>
         <Text style={styles.label}>Date: {currentSurvey.date}</Text>
       </View>
+
+      {(currentSurvey.contactName || currentSurvey.contactPhone) && (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Contact Details</Text>
+          {currentSurvey.contactName ? <Text style={styles.label}>Name: {currentSurvey.contactName}</Text> : null}
+          {currentSurvey.contactPhone ? <Text style={styles.label}>Phone: {currentSurvey.contactPhone}</Text> : null}
+        </View>
+      )}
+
+      {currentSurvey.notes && (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Notes</Text>
+          <Text style={styles.label}>{currentSurvey.notes}</Text>
+        </View>
+      )}
 
       {currentSurvey.photo && (
         <View style={styles.card}>
@@ -53,9 +72,15 @@ export default function SurveyPreview() {
         </View>
       )}
 
-      <Pressable style={styles.btn} onPress={handleSubmit}>
-        <Text style={styles.btnText}>Submit Survey</Text>
-      </Pressable>
+      <View style={styles.buttonRow}>
+        <Pressable style={styles.btnEdit} onPress={handleEdit}>
+          <Text style={styles.btnText}>Edit Survey</Text>
+        </Pressable>
+
+        <Pressable style={styles.btnSubmit} onPress={handleSubmit}>
+          <Text style={styles.btnText}>Submit Survey</Text>
+        </Pressable>
+      </View>
       
       <Pressable style={styles.btnBack} onPress={() => router.back()}>
         <Text style={styles.btnText}>Go Back</Text>
@@ -77,6 +102,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     marginTop: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#007BFF'
   },
   card: {
     backgroundColor: '#fff',
@@ -102,12 +133,24 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 6,
   },
-  btn: {
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  btnEdit: {
+    backgroundColor: '#ffc107',
+    padding: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    width: '48%'
+  },
+  btnSubmit: {
     backgroundColor: '#28a745',
     padding: 12,
     borderRadius: 6,
     alignItems: 'center',
-    marginBottom: 10,
+    width: '48%'
   },
   btnBack: {
     backgroundColor: '#007BFF',
