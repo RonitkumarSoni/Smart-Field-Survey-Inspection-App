@@ -12,22 +12,19 @@ export default function CreateSurvey() {
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState('Medium')
   const [date, setDate] = useState('')
-  const [notes, setNotes] = useState('')
 
   const handleSubmit = () => {
-    // validate required fields
-    if (!siteName.trim() || !clientName.trim() || !date.trim()) {
-      Alert.alert('Error', 'Site Name, Client Name and Date are required!')
+    if (siteName === '' || clientName === '' || date === '') {
+      Alert.alert('Error', 'Site Name, Client Name and Date are required')
       return
     }
 
     addSurvey({
-      siteName,
-      clientName,
-      description,
-      priority,
-      date,
-      notes,
+      siteName: siteName,
+      clientName: clientName,
+      description: description,
+      priority: priority,
+      date: date,
       photo: null,
       contactName: '',
       contactPhone: '',
@@ -35,18 +32,15 @@ export default function CreateSurvey() {
       longitude: '',
     })
 
-    Alert.alert('Success', 'Survey created!', [
-      { text: 'View Preview', onPress: () => router.push('/(drawer)/preview') },
-      { text: 'OK' }
+    Alert.alert('Success', 'Survey created', [
+      { text: 'OK', onPress: () => router.push('/(drawer)/preview') }
     ])
 
-    // clear the form
     setSiteName('')
     setClientName('')
     setDescription('')
     setPriority('Medium')
     setDate('')
-    setNotes('')
   }
 
   return (
@@ -56,66 +50,50 @@ export default function CreateSurvey() {
       </View>
 
       <View style={styles.form}>
-        <Text style={styles.label}>Site Name *</Text>
+        <Text style={styles.label}>Site Name</Text>
         <TextInput
           style={styles.input}
-          placeholder="Enter site name"
           value={siteName}
           onChangeText={setSiteName}
         />
 
-        <Text style={styles.label}>Client Name *</Text>
+        <Text style={styles.label}>Client Name</Text>
         <TextInput
           style={styles.input}
-          placeholder="Enter client name"
           value={clientName}
           onChangeText={setClientName}
         />
 
         <Text style={styles.label}>Description</Text>
         <TextInput
-          style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
-          placeholder="Enter description"
+          style={styles.input}
           value={description}
           onChangeText={setDescription}
-          multiline
         />
 
         <Text style={styles.label}>Priority</Text>
-        <View style={styles.priorityRow}>
-          {['High', 'Medium', 'Low'].map(p => (
-            <Pressable
-              key={p}
-              style={[styles.priorityBtn, priority === p && styles.priorityActive]}
-              onPress={() => setPriority(p)}
-            >
-              <Text style={[styles.priorityText, priority === p && { color: 'white' }]}>{p}</Text>
-            </Pressable>
-          ))}
+        <View style={styles.row}>
+          <Pressable style={priority === 'High' ? styles.btnActive : styles.btn} onPress={() => setPriority('High')}>
+            <Text style={priority === 'High' ? styles.textActive : styles.text}>High</Text>
+          </Pressable>
+          <Pressable style={priority === 'Medium' ? styles.btnActive : styles.btn} onPress={() => setPriority('Medium')}>
+            <Text style={priority === 'Medium' ? styles.textActive : styles.text}>Medium</Text>
+          </Pressable>
+          <Pressable style={priority === 'Low' ? styles.btnActive : styles.btn} onPress={() => setPriority('Low')}>
+            <Text style={priority === 'Low' ? styles.textActive : styles.text}>Low</Text>
+          </Pressable>
         </View>
 
-        <Text style={styles.label}>Date *</Text>
+        <Text style={styles.label}>Date</Text>
         <TextInput
           style={styles.input}
-          placeholder="YYYY-MM-DD"
           value={date}
           onChangeText={setDate}
-        />
-
-        <Text style={styles.label}>Notes</Text>
-        <TextInput
-          style={[styles.input, { height: 60, textAlignVertical: 'top' }]}
-          placeholder="Additional notes..."
-          value={notes}
-          onChangeText={setNotes}
-          multiline
         />
 
         <Pressable style={styles.submitBtn} onPress={handleSubmit}>
           <Text style={styles.submitText}>Submit Survey</Text>
         </Pressable>
-
-        <View style={{ height: 40 }} />
       </View>
     </ScrollView>
   )
@@ -124,66 +102,60 @@ export default function CreateSurvey() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
   },
   header: {
-    backgroundColor: '#007BFF',
+    backgroundColor: 'blue',
     padding: 20,
-    paddingTop: 50,
+    paddingTop: 40,
     alignItems: 'center',
   },
   headerText: {
     color: 'white',
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 20,
   },
   form: {
-    padding: 16,
+    padding: 20,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 6,
-    marginTop: 12,
+    fontSize: 16,
+    marginTop: 10,
+    marginBottom: 5,
   },
   input: {
-    backgroundColor: 'white',
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 6,
-    padding: 12,
-    fontSize: 15,
-    color: '#333',
+    borderColor: 'gray',
+    padding: 10,
+    fontSize: 16,
   },
-  priorityRow: {
+  row: {
     flexDirection: 'row',
-    gap: 8,
   },
-  priorityBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
+  btn: {
     borderWidth: 1,
-    borderColor: '#007BFF',
+    borderColor: 'blue',
+    padding: 10,
+    marginRight: 10,
   },
-  priorityActive: {
-    backgroundColor: '#007BFF',
+  btnActive: {
+    backgroundColor: 'blue',
+    padding: 10,
+    marginRight: 10,
   },
-  priorityText: {
-    color: '#007BFF',
-    fontWeight: '500',
+  text: {
+    color: 'blue',
+  },
+  textActive: {
+    color: 'white',
   },
   submitBtn: {
-    backgroundColor: '#28a745',
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
+    backgroundColor: 'green',
+    padding: 15,
     marginTop: 20,
+    alignItems: 'center',
   },
   submitText: {
     color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
+    fontSize: 18,
+  }
 })

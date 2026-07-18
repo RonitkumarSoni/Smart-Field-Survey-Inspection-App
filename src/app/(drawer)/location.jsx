@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { View, Text, Pressable, Alert, ActivityIndicator, StyleSheet } from 'react-native'
 import * as Location from 'expo-location'
 import * as Clipboard from 'expo-clipboard'
+import MapView, { Marker } from 'react-native-maps'
 
 export default function LocationScreen() {
   const [location, setLocation] = useState(null)
@@ -12,7 +13,7 @@ export default function LocationScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync()
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Location permission was not granted')
+        Alert.alert('Permission Denied', 'Location permission not granted')
         setLoading(false)
         return
       }
@@ -21,53 +22,61 @@ export default function LocationScreen() {
       setLocation(result.coords)
     } catch (error) {
       Alert.alert('Error', 'Could not get location')
-      console.log(error)
     }
     setLoading(false)
   }
 
   const copyLocation = async () => {
-    if (!location) {
-      Alert.alert('No Location', 'Get your location first')
-      return
+    if (location) {
+      const text = location.latitude + ", " + location.longitude
+      await Clipboard.setStringAsync(text)
+      Alert.alert('Copied!', 'Location copied')
     }
-    const text = `Lat: ${location.latitude}, Lng: ${location.longitude}`
-    await Clipboard.setStringAsync(text)
-    Alert.alert('Copied!', 'Location copied to clipboard')
   }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Location Demo</Text>
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#007BFF" />
-      ) : null}
+      {loading && <ActivityIndicator size="large" color="blue" />}
 
       {location ? (
-        <View style={styles.locationCard}>
-          <Text style={styles.label}>Latitude</Text>
-          <Text style={styles.value}>{location.latitude.toFixed(6)}</Text>
-
-          <Text style={styles.label}>Longitude</Text>
-          <Text style={styles.value}>{location.longitude.toFixed(6)}</Text>
-
-          <Text style={styles.label}>Accuracy</Text>
-          <Text style={styles.value}>{location.accuracy ? location.accuracy.toFixed(2) + ' meters' : 'N/A'}</Text>
+        <View style={styles.card}>
+          <Text style={styles.text}>Lat: {location.latitude}</Text>
+          <Text style={styles.text}>Lng: {location.longitude}</Text>
+          <Text style={styles.text}>Accuracy: {location.accuracy}</Text>
+          
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: location.latitude,
+              longitude: location.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+          >
+            <Marker
+              coordinate={{
+                latitude: location.latitude,
+                longitude: location.longitude,
+              }}
+              title="You are here"
+            />
+          </MapView>
         </View>
       ) : (
-        <Text style={styles.noData}>Press the button to get your location</Text>
+        <Text style={styles.text}>No location yet</Text>
       )}
 
-      <Pressable style={styles.button} onPress={getLocation}>
-        <Text style={styles.buttonText}>{location ? 'Refresh Location' : 'Get Location'}</Text>
+      <Pressable style={styles.btn} onPress={getLocation}>
+        <Text style={styles.btnText}>Get Location</Text>
       </Pressable>
 
-      {location ? (
-        <Pressable style={[styles.button, { backgroundColor: '#28a745' }]} onPress={copyLocation}>
-          <Text style={styles.buttonText}>Copy Location to Clipboard</Text>
+      {location && (
+        <Pressable style={styles.btn2} onPress={copyLocation}>
+          <Text style={styles.btnText}>Copy Location</Text>
         </Pressable>
-      ) : null}
+      )}
     </View>
   )
 }
@@ -75,51 +84,46 @@ export default function LocationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
+    alignItems: 'center'
   },
   title: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 20,
-  },
-  locationCard: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 8,
-    width: '100%',
-    marginBottom: 20,
-    elevation: 2,
-  },
-  label: {
-    fontSize: 13,
-    color: '#666',
-    marginTop: 8,
-  },
-  value: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    marginBottom: 20
   },
-  noData: {
-    fontSize: 15,
-    color: '#999',
-    marginBottom: 20,
+  card: {
+    width: '100%',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: 'gray',
+    marginBottom: 20
   },
-  button: {
-    backgroundColor: '#007BFF',
-    padding: 12,
-    borderRadius: 6,
-    marginBottom: 10,
+  text: {
+    fontSize: 16,
+    marginBottom: 10
+  },
+  map: {
+    width: '100%',
+    height: 250,
+    marginTop: 10
+  },
+  btn: {
+    backgroundColor: 'blue',
+    padding: 15,
     width: '100%',
     alignItems: 'center',
+    marginBottom: 10
   },
-  buttonText: {
+  btn2: {
+    backgroundColor: 'green',
+    padding: 15,
+    width: '100%',
+    alignItems: 'center'
+  },
+  btnText: {
     color: 'white',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
+    fontSize: 16
+  }
 })

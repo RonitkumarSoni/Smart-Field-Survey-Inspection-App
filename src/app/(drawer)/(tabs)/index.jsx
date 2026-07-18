@@ -9,7 +9,6 @@ export default function Dashboard() {
   const { surveys } = useSurveys()
   const student = students[0]
 
-  // count today's surveys
   const today = new Date().toISOString().split('T')[0]
   const todayCount = surveys.filter(s => s.date === today).length
 
@@ -20,59 +19,48 @@ export default function Dashboard() {
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.welcome}>Welcome back, {student.name}!</Text>
+        <Text style={styles.welcome}>Welcome, {student.name}</Text>
 
-        {/* Student Details */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Student Details</Text>
           <Text style={styles.cardText}>Name: {student.name}</Text>
           <Text style={styles.cardText}>Course: {student.course}</Text>
-          <Text style={styles.cardText}>Year: {student.year}</Text>
         </View>
 
-        {/* Today's Survey Count */}
-        <View style={styles.countCard}>
-          <Text style={styles.cardTitle}>Today's Surveys</Text>
-          <Text style={styles.countNumber}>{todayCount}</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Today's Surveys: {todayCount}</Text>
         </View>
 
-        {/* Quick Actions */}
         <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <View style={styles.actionsRow}>
-          <Pressable style={styles.actionBtn} onPress={() => router.push('/(drawer)/(tabs)/survey')}>
-            <Text style={styles.actionText}>New Survey</Text>
+        <View style={styles.row}>
+          <Pressable style={styles.btn} onPress={() => router.push('/(drawer)/(tabs)/survey')}>
+            <Text style={styles.btnText}>New Survey</Text>
           </Pressable>
-          <Pressable style={styles.actionBtn} onPress={() => router.push('/(drawer)/camera')}>
-            <Text style={styles.actionText}>Camera</Text>
+          <Pressable style={styles.btn} onPress={() => router.push('/(drawer)/camera')}>
+            <Text style={styles.btnText}>Camera</Text>
           </Pressable>
         </View>
-        <View style={styles.actionsRow}>
-          <Pressable style={styles.actionBtn} onPress={() => router.push('/(drawer)/contact')}>
-            <Text style={styles.actionText}>Contacts</Text>
+        <View style={styles.row}>
+          <Pressable style={styles.btn} onPress={() => router.push('/(drawer)/contact')}>
+            <Text style={styles.btnText}>Contacts</Text>
           </Pressable>
-          <Pressable style={styles.actionBtn} onPress={() => router.push('/(drawer)/location')}>
-            <Text style={styles.actionText}>Location</Text>
+          <Pressable style={styles.btn} onPress={() => router.push('/(drawer)/location')}>
+            <Text style={styles.btnText}>Location</Text>
           </Pressable>
         </View>
 
-        {/* Recent Surveys */}
         <Text style={styles.sectionTitle}>Recent Surveys</Text>
         {surveys.length === 0 ? (
-          <Text style={styles.emptyText}>No surveys yet</Text>
+          <Text>No surveys found</Text>
         ) : (
-          surveys.slice(0, 3).map(survey => (
+          surveys.map(survey => (
             <View key={survey.id} style={styles.card}>
               <Text style={styles.cardTitle}>{survey.siteName}</Text>
-              <Text style={styles.cardText}>Client: {survey.clientName}</Text>
-              <Text style={styles.cardText}>Date: {survey.date}</Text>
-              <Text style={[styles.cardText, { color: survey.priority === 'High' ? 'red' : survey.priority === 'Medium' ? 'orange' : 'green' }]}>
-                Priority: {survey.priority}
-              </Text>
+              <Text>Client: {survey.clientName}</Text>
+              <Text>Date: {survey.date}</Text>
             </View>
           ))
         )}
-
-        <View style={{ height: 30 }} />
       </View>
     </ScrollView>
   )
@@ -81,90 +69,58 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
   },
   header: {
-    backgroundColor: '#007BFF',
+    backgroundColor: 'blue',
     padding: 20,
-    paddingTop: 50,
+    paddingTop: 40,
     alignItems: 'center',
   },
   headerText: {
     color: 'white',
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 20,
   },
   content: {
-    padding: 16,
+    padding: 15,
   },
   welcome: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
   card: {
-    backgroundColor: 'white',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    borderWidth: 1,
+    borderColor: 'gray',
+    padding: 15,
+    marginBottom: 10,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 6,
   },
   cardText: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
-  },
-  countCard: {
-    backgroundColor: '#e3f2fd',
-    padding: 20,
-    borderRadius: 8,
-    marginBottom: 12,
-    alignItems: 'center',
-  },
-  countNumber: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#007BFF',
+    fontSize: 16,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
-    marginTop: 12,
-    marginBottom: 8,
+    marginTop: 10,
+    marginBottom: 10,
   },
-  actionsRow: {
+  row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 10,
   },
-  actionBtn: {
-    backgroundColor: '#007BFF',
-    padding: 14,
-    borderRadius: 8,
-    flex: 1,
-    marginHorizontal: 4,
+  btn: {
+    backgroundColor: 'blue',
+    padding: 15,
+    width: '48%',
     alignItems: 'center',
   },
-  actionText: {
+  btnText: {
     color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  emptyText: {
-    color: '#999',
-    textAlign: 'center',
-    marginTop: 10,
-  },
+    fontSize: 16,
+  }
 })
