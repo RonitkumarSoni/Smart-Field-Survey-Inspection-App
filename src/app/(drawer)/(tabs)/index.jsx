@@ -69,17 +69,18 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
   header: {
-    backgroundColor: 'blue',
+    backgroundColor: '#007BFF',
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 45,
     alignItems: 'center',
   },
   headerText: {
     color: 'white',
-    fontSize: 20,
+    fontSize: 22,
+    fontWeight: 'bold',
   },
   content: {
     padding: 15,
@@ -87,25 +88,32 @@ const styles = StyleSheet.create({
   welcome: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 10,
+    color: '#333',
+    marginBottom: 15,
   },
   card: {
+    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: 'gray',
+    borderColor: '#ddd',
+    borderRadius: 8,
     padding: 15,
-    marginBottom: 10,
+    marginBottom: 15,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
   },
   cardText: {
-    fontSize: 16,
+    fontSize: 15,
+    color: '#666',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 10,
+    color: '#333',
+    marginTop: 15,
     marginBottom: 10,
   },
   row: {
@@ -114,13 +122,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   btn: {
-    backgroundColor: 'blue',
-    padding: 15,
+    backgroundColor: '#007BFF',
+    padding: 12,
+    borderRadius: 6,
     width: '48%',
     alignItems: 'center',
   },
   btnText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 15,
+    fontWeight: '600',
   }
 })

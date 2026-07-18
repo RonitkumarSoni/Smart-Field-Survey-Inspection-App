@@ -79,37 +79,45 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   card: {
+    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: 'gray',
+    borderColor: '#ddd',
+    borderRadius: 8,
     padding: 15,
     marginBottom: 15,
   },
   label: {
     fontSize: 16,
-    marginBottom: 5,
+    color: '#333',
+    marginBottom: 6,
   },
   photo: {
     width: '100%',
     height: 200,
+    borderRadius: 6,
   },
   map: {
     width: '100%',
     height: 200,
     marginTop: 10,
+    borderRadius: 6,
   },
   btn: {
-    backgroundColor: 'green',
-    padding: 15,
+    backgroundColor: '#28a745',
+    padding: 12,
+    borderRadius: 6,
     alignItems: 'center',
     marginBottom: 10,
   },
   btnBack: {
-    backgroundColor: 'blue',
-    padding: 15,
+    backgroundColor: '#007BFF',
+    padding: 12,
+    borderRadius: 6,
     alignItems: 'center',
   },
   btnText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 16,
+    fontWeight: '600',
   }
 })
