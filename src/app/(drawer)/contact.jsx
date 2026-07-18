@@ -1,18 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import {
     View,
     Text,
     StyleSheet,
     Button,
     Alert,
+    FlatList,
 } from "react-native";
 import * as Contacts from "expo-contacts";
-import { FlatList } from "react-native-web";
 
 export default function ContactsScreen() {
+    const [contactList, setContactList] = useState([]);
 
     const getContacts = async () => {
-       
         const { status } = await Contacts.requestPermissionsAsync();
 
         if (status !== "granted") {
@@ -23,19 +23,16 @@ export default function ContactsScreen() {
             return;
         }
 
-        
         const { data } = await Contacts.getContactsAsync({
             fields: [Contacts.Fields.PhoneNumbers],
-            fields: [Contacts.Fields.Emails],
         });
 
         if (data.length > 0) {
+            setContactList(data);
             Alert.alert(
                 "Success",
                 `Total Contacts: ${data.length}`
             );
-
-            console.log(data); 
         } else {
             Alert.alert("No Contacts Found");
         }
@@ -49,9 +46,16 @@ export default function ContactsScreen() {
                 title="Get Contacts Access"
                 onPress={getContacts}
             />
-            <FlatList data={name} keyExtractor={(item)=> item.id} renderItem={({item})=>(
-                <View>{item.name}</View>
-            )}/>
+            
+            <FlatList 
+                data={contactList} 
+                keyExtractor={(item) => item.id} 
+                renderItem={({ item }) => (
+                    <View style={styles.contactItem}>
+                        <Text style={styles.contactText}>{item.name}</Text>
+                    </View>
+                )}
+            />
         </View>
     );
 }
@@ -68,5 +72,14 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: "bold",
         marginBottom: 20,
+    },
+    contactItem: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+        width: '100%',
+    },
+    contactText: {
+        fontSize: 16,
     },
 });

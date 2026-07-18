@@ -2,14 +2,7 @@ import React, { useState } from 'react'
 import { View, Text, Pressable, Alert, ActivityIndicator, StyleSheet } from 'react-native'
 import * as Location from 'expo-location'
 import * as Clipboard from 'expo-clipboard'
-import { Platform } from 'react-native'
-
-let MapView, Marker;
-if (Platform.OS !== 'web') {
-  const Maps = require('react-native-maps')
-  MapView = Maps.default
-  Marker = Maps.Marker
-}
+import MyMap from '../../components/MyMap'
 
 export default function LocationScreen() {
   const [location, setLocation] = useState(null)
@@ -53,28 +46,11 @@ export default function LocationScreen() {
           <Text style={styles.text}>Lng: {location.longitude}</Text>
           <Text style={styles.text}>Accuracy: {location.accuracy}</Text>
           
-          {MapView && (
-            <MapView
-              style={styles.map}
-              initialRegion={{
-                latitude: location.latitude,
-                longitude: location.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-            >
-              <Marker
-                coordinate={{
-                  latitude: location.latitude,
-                  longitude: location.longitude,
-                }}
-                title="You are here"
-              />
-            </MapView>
-          )}
-          {!MapView && (
-            <Text style={{ marginTop: 10, color: 'blue' }}>[Map is only available on Mobile App]</Text>
-          )}
+          <MyMap 
+            latitude={location.latitude} 
+            longitude={location.longitude} 
+            style={styles.map} 
+          />
         </View>
       ) : (
         <Text style={styles.text}>No location yet</Text>
