@@ -2,7 +2,14 @@ import React from 'react'
 import { View, Text, ScrollView, Pressable, Alert, Image, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useSurveys } from '../../context/SurveyContext'
-import MapView, { Marker } from 'react-native-maps'
+import { Platform } from 'react-native'
+
+let MapView, Marker;
+if (Platform.OS !== 'web') {
+  const Maps = require('react-native-maps')
+  MapView = Maps.default
+  Marker = Maps.Marker
+}
 
 export default function SurveyPreview() {
   const router = useRouter()
@@ -45,22 +52,27 @@ export default function SurveyPreview() {
       {currentSurvey.latitude && currentSurvey.longitude && (
         <View style={styles.card}>
           <Text style={styles.label}>Location Map:</Text>
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: parseFloat(currentSurvey.latitude),
-              longitude: parseFloat(currentSurvey.longitude),
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
-          >
-            <Marker
-              coordinate={{
+          {MapView && (
+            <MapView
+              style={styles.map}
+              initialRegion={{
                 latitude: parseFloat(currentSurvey.latitude),
                 longitude: parseFloat(currentSurvey.longitude),
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
               }}
-            />
-          </MapView>
+            >
+              <Marker
+                coordinate={{
+                  latitude: parseFloat(currentSurvey.latitude),
+                  longitude: parseFloat(currentSurvey.longitude),
+                }}
+              />
+            </MapView>
+          )}
+          {!MapView && (
+            <Text style={{ marginTop: 10, color: 'blue' }}>[Map is only available on Mobile App]</Text>
+          )}
         </View>
       )}
 
