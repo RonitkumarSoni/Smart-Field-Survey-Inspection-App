@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -7,11 +7,13 @@ import {
   Text,
   Alert,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import {
   CameraView,
   useCameraPermissions,
 } from "expo-camera";
+import { useTheme } from "../../context/ThemeContext";
 
 const Camera = () => {
   const cameraRef = useRef(null);
@@ -24,22 +26,33 @@ const Camera = () => {
 
   const [permission, requestPermission] =
     useCameraPermissions();
+  const { colors } = useTheme();
 
   if (!permission) {
     return (
-      <View style={styles.permission}>
-        <ActivityIndicator size="large" color="#007BFF" />
+      <View style={[styles.permission, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   if (!permission.granted) {
     return (
-      <View style={styles.permission}>
-        <Button
-          title="Grant Camera Permission"
+      <View style={[styles.permission, { backgroundColor: colors.background, padding: 20 }]}>
+        <Text style={{ color: colors.text, marginBottom: 20, textAlign: 'center', fontSize: 16 }}>Camera permission is required to take survey photos</Text>
+        <Pressable
+          style={{
+            backgroundColor: colors.card,
+            paddingVertical: 12,
+            paddingHorizontal: 24,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: colors.border
+          }}
           onPress={requestPermission}
-        />
+        >
+          <Text style={{ color: colors.text, fontSize: 16, fontWeight: 'bold' }}>Grant Camera Permission</Text>
+        </Pressable>
       </View>
     );
   }

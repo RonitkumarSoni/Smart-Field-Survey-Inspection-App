@@ -1,12 +1,26 @@
 import { Stack } from 'expo-router'
 import { SurveyProvider } from '../context/SurveyContext'
+import { ThemeProvider, useTheme } from '../context/ThemeContext'
+import { StatusBar } from 'expo-status-bar'
 
-export default function RootLayout() {
+function AppContent() {
+  const { darkMode } = useTheme()
   return (
-    <SurveyProvider>
+    <>
+      <StatusBar style={darkMode ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(drawer)" />
       </Stack>
-    </SurveyProvider>
+    </>
+  )
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <SurveyProvider>
+        <AppContent />
+      </SurveyProvider>
+    </ThemeProvider>
   )
 }

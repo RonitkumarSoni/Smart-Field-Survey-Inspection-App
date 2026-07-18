@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, TextInput, Pressable, ScrollView, Alert, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useSurveys } from '../../context/SurveyContext'
+import { useTheme } from '../../context/ThemeContext'
 
 export default function EditSurvey() {
   const router = useRouter()
   const { currentSurvey, updateSurvey, setCurrentSurvey } = useSurveys()
+  const { colors, darkMode } = useTheme()
 
   const [siteName, setSiteName] = useState('')
   const [clientName, setClientName] = useState('')
@@ -55,62 +57,112 @@ export default function EditSurvey() {
     ])
   }
 
+  const getPriorityStyle = (p, isActive) => {
+    if (darkMode) {
+      if (isActive) {
+        return { backgroundColor: 'rgba(255, 255, 255, 0.15)', borderColor: '#ffffff' }
+      }
+      return { backgroundColor: 'transparent', borderColor: 'rgba(255, 255, 255, 0.1)' }
+    }
+    if (isActive) {
+      if (p === 'High') return { backgroundColor: colors.danger, borderColor: colors.danger }
+      if (p === 'Medium') return { backgroundColor: colors.warning, borderColor: colors.warning }
+      return { backgroundColor: colors.success, borderColor: colors.success }
+    } else {
+      if (p === 'High') return { borderColor: colors.danger }
+      if (p === 'Medium') return { borderColor: colors.warning }
+      return { borderColor: colors.success }
+    }
+  }
+
+  const getPriorityTextStyle = (p, isActive) => {
+    if (darkMode) {
+      if (isActive) return { color: '#ffffff' }
+      return { color: '#a0a0a0' }
+    }
+    if (isActive) {
+      return { color: colors.background }
+    } else {
+      if (p === 'High') return { color: colors.danger }
+      if (p === 'Medium') return { color: colors.warning }
+      return { color: colors.success }
+    }
+  }
+
   if (!currentSurvey) return null;
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Edit Survey</Text>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: darkMode ? colors.headerBg : colors.warning }]}>
+        <Text style={[styles.headerText, { color: darkMode ? colors.headerText : colors.background }]}>Edit Survey</Text>
       </View>
 
       <View style={styles.form}>
-        <Text style={styles.label}>Site Name</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Site Name</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
           value={siteName}
           onChangeText={setSiteName}
         />
 
-        <Text style={styles.label}>Client Name</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Client Name</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
           value={clientName}
           onChangeText={setClientName}
         />
 
-        <Text style={styles.label}>Description</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Description</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
           value={description}
           onChangeText={setDescription}
         />
 
-        <Text style={styles.label}>Priority</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Priority</Text>
         <View style={styles.row}>
-          <Pressable style={priority === 'High' ? styles.btnActive : styles.btn} onPress={() => setPriority('High')}>
-            <Text style={priority === 'High' ? styles.textActive : styles.text}>High</Text>
-          </Pressable>
-          <Pressable style={priority === 'Medium' ? styles.btnActive : styles.btn} onPress={() => setPriority('Medium')}>
-            <Text style={priority === 'Medium' ? styles.textActive : styles.text}>Medium</Text>
-          </Pressable>
-          <Pressable style={priority === 'Low' ? styles.btnActive : styles.btn} onPress={() => setPriority('Low')}>
-            <Text style={priority === 'Low' ? styles.textActive : styles.text}>Low</Text>
-          </Pressable>
+          {['High', 'Medium', 'Low'].map(p => {
+            const isActive = priority === p
+            return (
+              <Pressable 
+                key={p}
+                style={[
+                  styles.btn, 
+                  getPriorityStyle(p, isActive),
+                ]} 
+                onPress={() => setPriority(p)}
+              >
+                <Text style={[styles.text, getPriorityTextStyle(p, isActive)]}>{p}</Text>
+              </Pressable>
+            )
+          })}
         </View>
 
-        <Text style={styles.label}>Date</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Date</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
           value={date}
           onChangeText={setDate}
         />
 
         <View style={styles.actionRow}>
-            <Pressable style={styles.cancelBtn} onPress={() => router.back()}>
-                <Text style={styles.submitText}>Cancel</Text>
+            <Pressable 
+              style={[
+                styles.cancelBtn, 
+                darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border } : { backgroundColor: colors.danger }
+              ]} 
+              onPress={() => router.back()}
+            >
+                <Text style={[styles.submitText, { color: darkMode ? colors.textMuted : 'white' }]}>Cancel</Text>
             </Pressable>
-            <Pressable style={styles.submitBtn} onPress={handleUpdate}>
-                <Text style={styles.submitText}>Update Survey</Text>
+            <Pressable 
+              style={[
+                styles.submitBtn, 
+                darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.primary } : { backgroundColor: colors.success }
+              ]} 
+              onPress={handleUpdate}
+            >
+                <Text style={[styles.submitText, { color: darkMode ? colors.primary : 'white' }]}>Update</Text>
             </Pressable>
         </View>
       </View>
@@ -121,16 +173,14 @@ export default function EditSurvey() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   header: {
-    backgroundColor: '#ffc107',
     padding: 20,
-    paddingTop: 15,
+    paddingTop: 35,
+    paddingBottom: 25,
     alignItems: 'center',
   },
   headerText: {
-    color: '#333',
     fontSize: 22,
     fontWeight: 'bold',
   },
@@ -140,18 +190,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#333',
     marginTop: 12,
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 6,
     padding: 12,
     fontSize: 16,
-    color: '#333',
   },
   row: {
     flexDirection: 'row',
@@ -164,43 +210,27 @@ const styles = StyleSheet.create({
   },
   btn: {
     borderWidth: 1,
-    borderColor: '#007BFF',
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginRight: 10,
-  },
-  btnActive: {
-    backgroundColor: '#007BFF',
     borderRadius: 6,
     paddingVertical: 8,
     paddingHorizontal: 16,
     marginRight: 10,
   },
   text: {
-    color: '#007BFF',
-    fontWeight: '500',
-  },
-  textActive: {
-    color: 'white',
     fontWeight: '500',
   },
   cancelBtn: {
-    backgroundColor: '#dc3545',
     padding: 14,
     borderRadius: 8,
     alignItems: 'center',
     width: '48%'
   },
   submitBtn: {
-    backgroundColor: '#28a745',
     padding: 14,
     borderRadius: 8,
     alignItems: 'center',
     width: '48%'
   },
   submitText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   }

@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
-import { View, Text, Pressable, Alert, ActivityIndicator, StyleSheet } from 'react-native'
+import { View, Text, Pressable, Alert, StyleSheet } from 'react-native'
 import * as Location from 'expo-location'
 import * as Clipboard from 'expo-clipboard'
 import MyMap from '../../components/MyMap'
+import { useTheme } from '../../context/ThemeContext'
 
 export default function LocationScreen() {
   const [location, setLocation] = useState(null)
+  const { colors, darkMode } = useTheme()
 
   const getLocation = async () => {
     try {
@@ -31,14 +33,14 @@ export default function LocationScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Location Demo</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Location Demo</Text>
 
       {location ? (
-        <View style={styles.card}>
-          <Text style={styles.text}><Text style={{ fontWeight: 'bold' }}>Latitude:</Text> {location.latitude}</Text>
-          <Text style={styles.text}><Text style={{ fontWeight: 'bold' }}>Longitude:</Text> {location.longitude}</Text>
-          <Text style={styles.text}><Text style={{ fontWeight: 'bold' }}>Accuracy:</Text> {location.accuracy} meters</Text>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.text, { color: colors.text }]}><Text style={{ fontWeight: 'bold' }}>Latitude:</Text> {location.latitude}</Text>
+          <Text style={[styles.text, { color: colors.text }]}><Text style={{ fontWeight: 'bold' }}>Longitude:</Text> {location.longitude}</Text>
+          <Text style={[styles.text, { color: colors.text }]}><Text style={{ fontWeight: 'bold' }}>Accuracy:</Text> {location.accuracy} meters</Text>
           
           <MyMap 
             latitude={location.latitude} 
@@ -47,16 +49,28 @@ export default function LocationScreen() {
           />
         </View>
       ) : (
-        <Text style={[styles.text, { color: '#666', marginVertical: 20 }]}>No location details fetched yet</Text>
+        <Text style={[styles.text, { color: colors.textMuted, marginVertical: 20 }]}>No location details fetched yet</Text>
       )}
 
-      <Pressable style={styles.btn} onPress={getLocation}>
-        <Text style={styles.btnText}>Get Location</Text>
+      <Pressable 
+        style={[
+          styles.btn, 
+          darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.primary } : { backgroundColor: colors.primary }
+        ]} 
+        onPress={getLocation}
+      >
+        <Text style={[styles.btnText, { color: darkMode ? colors.primary : 'white' }]}>Get Location</Text>
       </Pressable>
 
       {location && (
-        <Pressable style={styles.btn2} onPress={copyLocation}>
-          <Text style={styles.btnText}>Copy Location</Text>
+        <Pressable 
+          style={[
+            styles.btn2, 
+            darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border } : { backgroundColor: colors.success }
+          ]} 
+          onPress={copyLocation}
+        >
+          <Text style={[styles.btnText, { color: darkMode ? colors.textMuted : 'white' }]}>Copy Location</Text>
         </Pressable>
       )}
     </View>
@@ -67,27 +81,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center'
   },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 20
   },
   card: {
     width: '100%',
     padding: 15,
-    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     marginBottom: 20
   },
   text: {
     fontSize: 16,
-    color: '#444',
     marginBottom: 8
   },
   map: {
@@ -97,7 +106,6 @@ const styles = StyleSheet.create({
     borderRadius: 6
   },
   btn: {
-    backgroundColor: '#007BFF',
     padding: 12,
     borderRadius: 6,
     width: '100%',
@@ -105,14 +113,12 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   btn2: {
-    backgroundColor: '#28a745',
     padding: 12,
     borderRadius: 6,
     width: '100%',
     alignItems: 'center'
   },
   btnText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: '600'
   }

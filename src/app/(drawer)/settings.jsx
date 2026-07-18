@@ -1,9 +1,11 @@
 import React from 'react'
-import { View, Text, Pressable, Alert, StyleSheet } from 'react-native'
+import { View, Text, Pressable, Alert, StyleSheet, Switch } from 'react-native'
 import { useSurveys } from '../../context/SurveyContext'
+import { useTheme } from '../../context/ThemeContext'
 
 export default function Settings() {
   const { surveys } = useSurveys()
+  const { colors, darkMode, toggleTheme } = useTheme()
 
   const handleClearData = () => {
     Alert.alert(
@@ -19,26 +21,42 @@ export default function Settings() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
 
-      <View style={styles.settingCard}>
-        <Text style={styles.settingLabel}>App Version</Text>
-        <Text style={styles.settingValue}>1.0.0</Text>
+      <View style={[styles.settingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[styles.settingLabel, { color: colors.textMuted }]}>Dark Mode</Text>
+        <Switch
+          value={darkMode}
+          onValueChange={toggleTheme}
+          trackColor={{ false: '#767577', true: colors.primary }}
+          thumbColor={darkMode ? '#ffffff' : '#f4f3f4'}
+        />
       </View>
 
-      <View style={styles.settingCard}>
-        <Text style={styles.settingLabel}>Total Surveys</Text>
-        <Text style={styles.settingValue}>{surveys.length}</Text>
+      <View style={[styles.settingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[styles.settingLabel, { color: colors.textMuted }]}>App Version</Text>
+        <Text style={[styles.settingValue, { color: colors.text }]}>1.0.0</Text>
       </View>
 
-      <View style={styles.settingCard}>
-        <Text style={styles.settingLabel}>Developer</Text>
-        <Text style={styles.settingValue}>Student Project</Text>
+      <View style={[styles.settingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[styles.settingLabel, { color: colors.textMuted }]}>Total Surveys</Text>
+        <Text style={[styles.settingValue, { color: colors.text }]}>{surveys.length}</Text>
       </View>
 
-      <Pressable style={styles.clearBtn} onPress={handleClearData}>
-        <Text style={styles.clearBtnText}>Clear All Data</Text>
+      <View style={[styles.settingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[styles.settingLabel, { color: colors.textMuted }]}>Developer</Text>
+        <Text style={[styles.settingValue, { color: colors.text }]}>Student Project</Text>
+      </View>
+
+      <Pressable 
+        style={[
+          styles.clearBtn, 
+          darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.danger } : { backgroundColor: colors.danger }
+        ]} 
+        onPress={handleClearData}
+      >
+        <Text style={[styles.clearBtnText, { color: darkMode ? colors.danger : 'white' }]}>Clear All Data</Text>
       </Pressable>
     </View>
   )
@@ -48,18 +66,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5',
     justifyContent: 'center',
   },
   title: {
     fontSize: 22,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 20,
     textAlign: 'center',
   },
   settingCard: {
-    backgroundColor: 'white',
+    borderWidth: 1,
     padding: 14,
     borderRadius: 8,
     marginBottom: 10,
@@ -69,22 +85,18 @@ const styles = StyleSheet.create({
   },
   settingLabel: {
     fontSize: 15,
-    color: '#666',
   },
   settingValue: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#333',
   },
   clearBtn: {
-    backgroundColor: '#dc3545',
     padding: 14,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 20,
   },
   clearBtnText: {
-    color: 'white',
     fontWeight: 'bold',
     fontSize: 15,
   },

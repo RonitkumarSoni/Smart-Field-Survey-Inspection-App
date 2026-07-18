@@ -1,17 +1,18 @@
 import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, Switch } from 'react-native'
 import { Drawer } from 'expo-router/drawer'
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer'
 import { Ionicons } from '@expo/vector-icons'
 import { students } from '../../data/students'
+import { useTheme } from '../../context/ThemeContext'
 
 import { usePathname } from 'expo-router'
 
 function CustomDrawerContent(props) {
   const student = students[0]
   const pathname = usePathname() || ''
+  const { darkMode, toggleTheme, colors } = useTheme()
 
-  // Determine active state based on the current pathname
   const isDashboard = pathname === '/' || pathname === '/(drawer)/(tabs)' || pathname.includes('/index')
   const isSurvey = pathname.includes('/survey')
   const isCamera = pathname.includes('/camera')
@@ -21,90 +22,112 @@ function CustomDrawerContent(props) {
   const isSettings = pathname.includes('/settings')
 
   return (
-    <DrawerContentScrollView {...props} contentContainerStyle={styles.drawerContainer}>
-      {/* Premium Header */}
-      <View style={styles.header}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{student.name.charAt(0).toUpperCase()}</Text>
+    <DrawerContentScrollView 
+      {...props} 
+      style={{ backgroundColor: colors.background }}
+      contentContainerStyle={[styles.drawerContainer, { backgroundColor: colors.background }]}
+    >
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.border }]}>
+        <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+          <Text style={[styles.avatarText, { color: darkMode ? colors.background : 'white' }]}>{student.name.charAt(0).toUpperCase()}</Text>
         </View>
         <View>
-          <Text style={styles.username}>{student.name}</Text>
-          <Text style={styles.userSub}>{student.course} • {student.year}</Text>
+          <Text style={[styles.username, { color: colors.text }]}>{student.name}</Text>
+          <Text style={[styles.userSub, { color: colors.textMuted }]}>{student.course} • {student.year}</Text>
         </View>
       </View>
 
-      <View style={styles.divider} />
+      <View style={[styles.toggleSection, { borderColor: colors.border }]}>
+        <View style={styles.toggleRow}>
+          <Ionicons name={darkMode ? "moon" : "sunny"} size={20} color={colors.primary} />
+          <Text style={[styles.toggleText, { color: colors.text }]}>Dark Mode</Text>
+        </View>
+        <Switch
+          value={darkMode}
+          onValueChange={toggleTheme}
+          trackColor={{ false: '#767577', true: colors.primary }}
+          thumbColor={darkMode ? '#ffffff' : '#f4f3f4'}
+        />
+      </View>
 
-      {/* Navigation Items */}
+      <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
       <View style={styles.menuContainer}>
         <DrawerItem
           label="Dashboard"
           focused={isDashboard}
-          activeTintColor="#007BFF"
-          inactiveTintColor="#666"
+          activeTintColor={colors.primary}
+          inactiveTintColor={colors.textMuted}
+          activeBackgroundColor={colors.drawerActiveBg}
           icon={({ color, size }) => <Ionicons name="home-outline" size={22} color={color} />}
           onPress={() => props.navigation.navigate('(tabs)', { screen: 'index' })}
-          labelStyle={styles.drawerLabel}
+          labelStyle={[styles.drawerLabel, { color: isDashboard ? colors.primary : colors.text }]}
         />
 
         <DrawerItem
           label="Survey"
           focused={isSurvey}
-          activeTintColor="#007BFF"
-          inactiveTintColor="#666"
+          activeTintColor={colors.primary}
+          inactiveTintColor={colors.textMuted}
+          activeBackgroundColor={colors.drawerActiveBg}
           icon={({ color, size }) => <Ionicons name="create-outline" size={22} color={color} />}
           onPress={() => props.navigation.navigate('(tabs)', { screen: 'survey' })}
-          labelStyle={styles.drawerLabel}
+          labelStyle={[styles.drawerLabel, { color: isSurvey ? colors.primary : colors.text }]}
         />
 
         <DrawerItem
           label="Camera"
           focused={isCamera}
-          activeTintColor="#007BFF"
-          inactiveTintColor="#666"
+          activeTintColor={colors.primary}
+          inactiveTintColor={colors.textMuted}
+          activeBackgroundColor={colors.drawerActiveBg}
           icon={({ color, size }) => <Ionicons name="camera-outline" size={22} color={color} />}
           onPress={() => props.navigation.navigate('camera')}
-          labelStyle={styles.drawerLabel}
+          labelStyle={[styles.drawerLabel, { color: isCamera ? colors.primary : colors.text }]}
         />
 
         <DrawerItem
           label="Contacts"
           focused={isContact}
-          activeTintColor="#007BFF"
-          inactiveTintColor="#666"
+          activeTintColor={colors.primary}
+          inactiveTintColor={colors.textMuted}
+          activeBackgroundColor={colors.drawerActiveBg}
           icon={({ color, size }) => <Ionicons name="people-outline" size={22} color={color} />}
           onPress={() => props.navigation.navigate('contact')}
-          labelStyle={styles.drawerLabel}
+          labelStyle={[styles.drawerLabel, { color: isContact ? colors.primary : colors.text }]}
         />
 
         <DrawerItem
           label="Location"
           focused={isLocation}
-          activeTintColor="#007BFF"
-          inactiveTintColor="#666"
+          activeTintColor={colors.primary}
+          inactiveTintColor={colors.textMuted}
+          activeBackgroundColor={colors.drawerActiveBg}
           icon={({ color, size }) => <Ionicons name="location-outline" size={22} color={color} />}
           onPress={() => props.navigation.navigate('location')}
-          labelStyle={styles.drawerLabel}
+          labelStyle={[styles.drawerLabel, { color: isLocation ? colors.primary : colors.text }]}
         />
 
         <DrawerItem
           label="Clipboard"
           focused={isClipboard}
-          activeTintColor="#007BFF"
-          inactiveTintColor="#666"
+          activeTintColor={colors.primary}
+          inactiveTintColor={colors.textMuted}
+          activeBackgroundColor={colors.drawerActiveBg}
           icon={({ color, size }) => <Ionicons name="clipboard-outline" size={22} color={color} />}
           onPress={() => props.navigation.navigate('clipboard')}
-          labelStyle={styles.drawerLabel}
+          labelStyle={[styles.drawerLabel, { color: isClipboard ? colors.primary : colors.text }]}
         />
 
         <DrawerItem
           label="Settings"
           focused={isSettings}
-          activeTintColor="#007BFF"
-          inactiveTintColor="#666"
+          activeTintColor={colors.primary}
+          inactiveTintColor={colors.textMuted}
+          activeBackgroundColor={colors.drawerActiveBg}
           icon={({ color, size }) => <Ionicons name="settings-outline" size={22} color={color} />}
           onPress={() => props.navigation.navigate('settings')}
-          labelStyle={styles.drawerLabel}
+          labelStyle={[styles.drawerLabel, { color: isSettings ? colors.primary : colors.text }]}
         />
       </View>
     </DrawerContentScrollView>
@@ -112,13 +135,14 @@ function CustomDrawerContent(props) {
 }
 
 export default function DrawerLayout() {
+  const { colors } = useTheme()
   return (
     <Drawer 
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         headerShown: false,
         drawerStyle: {
-          backgroundColor: '#f4f6f8',
+          backgroundColor: colors.background,
           width: 280,
         },
       }}
@@ -138,9 +162,9 @@ export default function DrawerLayout() {
 const styles = StyleSheet.create({
   drawerContainer: {
     paddingTop: 0,
+    flex: 1,
   },
   header: {
-    backgroundColor: '#f4f6f8', // Matches drawerStyle backgroundColor
     padding: 20,
     paddingTop: 40,
     flexDirection: 'row',
@@ -151,29 +175,24 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 23,
-    backgroundColor: '#007BFF', // Inverted avatar colors for contrast
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
   },
   avatarText: {
-    color: 'white',
     fontSize: 20,
     fontWeight: 'bold',
   },
   username: {
-    color: '#333',
     fontSize: 17,
     fontWeight: 'bold',
   },
   userSub: {
-    color: '#666',
     fontSize: 13,
     marginTop: 2,
   },
   divider: {
     height: 1,
-    backgroundColor: '#e0e0e0',
     marginHorizontal: 15,
     marginBottom: 10,
   },
@@ -185,4 +204,24 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginLeft: -10,
   },
+  toggleSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    marginHorizontal: 15,
+    borderWidth: 1,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  toggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+  }
 })

@@ -1,5 +1,5 @@
 export const students = [
-  { id: '1', name: 'Abdul Haque', course: 'Engineering', year: '3rd Year' },
+  { id: '1', name: 'Rajan Sir', course: 'Engineering', year: '3rd Year' },
   { id: '2', name: 'Jani manan', course: 'Design', year: '2nd Year' },
   { id: '3', name: 'Michael jaikishan', course: 'Business', year: '4th Year' },
 ];

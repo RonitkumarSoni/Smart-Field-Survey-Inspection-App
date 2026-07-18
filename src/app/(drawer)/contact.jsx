@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
     View,
     Text,
@@ -12,11 +12,13 @@ import {
 } from "react-native";
 import * as Contacts from "expo-contacts";
 import * as Clipboard from "expo-clipboard";
+import { useTheme } from "../../context/ThemeContext";
 
 export default function ContactsScreen() {
     const [contactList, setContactList] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [refreshing, setRefreshing] = useState(false);
+    const { colors, darkMode } = useTheme();
 
     const getContacts = async (showCountAlert = false) => {
         const { status } = await Contacts.requestPermissionsAsync();
@@ -71,18 +73,19 @@ export default function ContactsScreen() {
 
     const renderEmptyState = () => (
         <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>No contacts found</Text>
+            <Text style={[styles.emptyStateText, { color: colors.textMuted }]}>No contacts found</Text>
         </View>
     );
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.heading}>Contacts App</Text>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+            <Text style={[styles.heading, { backgroundColor: colors.headerBg, color: colors.headerText }]}>Contacts App</Text>
 
-            <View style={styles.searchContainer}>
+            <View style={[styles.searchContainer, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
                 <TextInput 
-                    style={styles.searchInput}
+                    style={[styles.searchInput, { backgroundColor: colors.inputBg, color: colors.text }]}
                     placeholder="Search contacts..."
+                    placeholderTextColor={colors.textMuted}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
@@ -90,10 +93,20 @@ export default function ContactsScreen() {
 
             {contactList.length === 0 && !refreshing ? (
                 <View style={styles.emptyState}>
-                    <Text style={styles.emptyStateText}>Press the button below to load contacts</Text>
-                    <View style={{marginTop: 10}}>
-                        <Button title="Get Contacts Access" onPress={() => getContacts(true)} />
-                    </View>
+                    <Text style={[styles.emptyStateText, { color: colors.textMuted, marginBottom: 15 }]}>Press the button below to load contacts</Text>
+                    <Pressable
+                        style={{
+                            backgroundColor: colors.card,
+                            paddingVertical: 12,
+                            paddingHorizontal: 24,
+                            borderRadius: 8,
+                            borderWidth: 1,
+                            borderColor: colors.border
+                        }}
+                        onPress={() => getContacts(true)}
+                    >
+                        <Text style={{ color: colors.text, fontSize: 16, fontWeight: 'bold' }}>Get Contacts Access</Text>
+                    </Pressable>
                 </View>
             ) : (
                 <FlatList 
@@ -111,15 +124,15 @@ export default function ContactsScreen() {
 
                         return (
                             <Pressable 
-                                style={styles.contactItem}
+                                style={[styles.contactItem, { backgroundColor: colors.card, borderBottomColor: colors.border }]}
                                 onPress={() => copyToClipboard(phoneNumber)}
                             >
-                                <View style={styles.avatar}>
-                                    <Text style={styles.avatarText}>{getInitials(item.name)}</Text>
+                                <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+                                    <Text style={[styles.avatarText, { color: darkMode ? colors.background : 'white' }]}>{getInitials(item.name)}</Text>
                                 </View>
                                 <View style={styles.contactDetails}>
-                                    <Text style={styles.contactText}>{item.name}</Text>
-                                    <Text style={styles.phoneText}>
+                                    <Text style={[styles.contactText, { color: colors.text }]}>{item.name}</Text>
+                                    <Text style={[styles.phoneText, { color: colors.textMuted }]}>
                                         {phoneNumber ? phoneNumber : "No Number"}
                                     </Text>
                                 </View>
@@ -135,33 +148,27 @@ export default function ContactsScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
     },
     heading: {
         fontSize: 24,
         fontWeight: "bold",
         padding: 20,
-        backgroundColor: '#007BFF',
-        color: 'white',
+        paddingTop: 35,
+        paddingBottom: 25,
         textAlign: 'center',
     },
     searchContainer: {
         padding: 10,
-        backgroundColor: '#fff',
         borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
     },
     searchInput: {
-        backgroundColor: '#f5f5f5',
         borderRadius: 8,
         padding: 10,
         fontSize: 16,
     },
     contactItem: {
         padding: 15,
-        backgroundColor: '#fff',
         borderBottomWidth: 1,
-        borderBottomColor: '#eee',
         flexDirection: 'row',
         alignItems: 'center',
     },
@@ -169,13 +176,11 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: '#007BFF',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 15,
     },
     avatarText: {
-        color: 'white',
         fontSize: 18,
         fontWeight: 'bold',
     },
@@ -185,11 +190,9 @@ const styles = StyleSheet.create({
     contactText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#333',
     },
     phoneText: {
         fontSize: 14,
-        color: '#666',
         marginTop: 4,
     },
     emptyState: {
@@ -200,7 +203,6 @@ const styles = StyleSheet.create({
     },
     emptyStateText: {
         fontSize: 16,
-        color: '#666',
         textAlign: 'center',
     }
-});
+})

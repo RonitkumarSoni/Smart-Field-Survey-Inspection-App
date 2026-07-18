@@ -1,10 +1,12 @@
 import { View, Text, Pressable, Alert, TextInput, StyleSheet } from 'react-native'
 import React, { useState } from 'react'
 import * as Clipboard from "expo-clipboard"
+import { useTheme } from '../../context/ThemeContext'
 
 export default function ClipboardScreen() {
     const [textToCopy, setTextToCopy] = useState("");
     const [pastedText, setPastedText] = useState("");
+    const { colors, darkMode } = useTheme();
 
     const handleTextToCopy = async () => {
         if (!textToCopy.trim()) {
@@ -44,47 +46,66 @@ export default function ClipboardScreen() {
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Clipboard Demo</Text>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+            <Text style={[styles.title, { color: colors.text }]}>Clipboard Demo</Text>
 
             <TextInput 
-                style={styles.input} 
+                style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]} 
                 placeholder='Type something to copy ...' 
+                placeholderTextColor={colors.textMuted}
                 value={textToCopy} 
                 onChangeText={setTextToCopy}
             />
 
             <View style={styles.row}>
-                <Pressable style={styles.buttonHalf} onPress={handleTextToCopy} >
-                    <Text style={styles.buttonText}>Copy Text</Text>
+                <Pressable 
+                    style={[
+                        styles.buttonHalf, 
+                        darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.primary } : { backgroundColor: colors.primary }
+                    ]} 
+                    onPress={handleTextToCopy} 
+                >
+                    <Text style={[styles.buttonText, { color: darkMode ? colors.primary : 'white' }]}>Copy Text</Text>
                 </Pressable>
 
-                <Pressable style={styles.buttonHalfAlt} onPress={handleTextToPaste} >
-                    <Text style={styles.buttonText}>Paste Text</Text>
+                <Pressable 
+                    style={[
+                        styles.buttonHalfAlt, 
+                        darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.success } : { backgroundColor: colors.success }
+                    ]} 
+                    onPress={handleTextToPaste} 
+                >
+                    <Text style={[styles.buttonText, { color: darkMode ? colors.success : 'white' }]}>Paste Text</Text>
                 </Pressable>
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-            <Text style={styles.sectionTitle}>Quick Copy Actions</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Quick Copy Actions</Text>
             <View style={styles.row}>
-                <Pressable style={styles.actionBtn} onPress={handleCopySurveyId}>
-                    <Text style={styles.actionBtnText}>Copy Survey ID</Text>
+                <Pressable style={[styles.actionBtn, { borderColor: colors.primary }]} onPress={handleCopySurveyId}>
+                    <Text style={[styles.actionBtnText, { color: colors.primary }]}>Copy Survey ID</Text>
                 </Pressable>
 
-                <Pressable style={styles.actionBtn} onPress={handleCopyContactNumber}>
-                    <Text style={styles.actionBtnText}>Copy Contact Number</Text>
+                <Pressable style={[styles.actionBtn, { borderColor: colors.primary }]} onPress={handleCopyContactNumber}>
+                    <Text style={[styles.actionBtnText, { color: colors.primary }]}>Copy Contact Number</Text>
                 </Pressable>
             </View>
 
-            <Pressable style={styles.clearBtn} onPress={handleClearClipboard}>
-                <Text style={styles.clearBtnText}>Clear Clipboard</Text>
+            <Pressable 
+                style={[
+                    styles.clearBtn, 
+                    darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.danger } : { backgroundColor: colors.danger }
+                ]} 
+                onPress={handleClearClipboard}
+            >
+                <Text style={[styles.clearBtnText, { color: darkMode ? colors.danger : 'white' }]}>Clear Clipboard</Text>
             </Pressable>
 
             {pastedText ? (
-                <View style={styles.pasteResult}>
-                    <Text style={styles.pasteLabel}>Pasted Content:</Text>
-                    <Text style={styles.pastedText}>{pastedText}</Text>
+                <View style={[styles.pasteResult, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
+                    <Text style={[styles.pasteLabel, { color: colors.textMuted }]}>Pasted Content:</Text>
+                    <Text style={[styles.pastedText, { color: colors.text }]}>{pastedText}</Text>
                 </View>
             ) : null}
         </View>
@@ -94,25 +115,21 @@ export default function ClipboardScreen() {
 const styles = StyleSheet.create({
     container:{
         flex:1,
-        backgroundColor:"#f5f5f5",
         padding: 20
     },
     title:{
         fontSize: 22,
         fontWeight:"bold",
-        color:"#333",
         marginBottom: 20,
         textAlign: 'center'
     },
     input: {
       width: '100%',
       height: 45,
-      borderColor: '#ddd',
       borderWidth: 1,
       borderRadius: 8,
       paddingHorizontal: 15,
       marginBottom: 20,
-      backgroundColor: 'white',
       fontSize: 16
     },
     row: {
@@ -121,49 +138,41 @@ const styles = StyleSheet.create({
         marginBottom: 15
     },
     buttonHalf: {
-      backgroundColor: '#007BFF',
       padding: 12,
       borderRadius: 6,
       width: '48%',
       alignItems: 'center'
     },
     buttonHalfAlt: {
-      backgroundColor: '#28a745',
       padding: 12,
       borderRadius: 6,
       width: '48%',
       alignItems: 'center'
     },
     buttonText: {
-      color: 'white',
       fontWeight: 'bold',
       fontSize: 15
     },
     divider: {
         height: 1,
-        backgroundColor: '#e0e0e0',
         marginVertical: 20
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 15,
-        color: '#333'
     },
     actionBtn: {
         borderWidth: 1,
-        borderColor: '#007BFF',
         padding: 10,
         borderRadius: 6,
         width: '48%',
         alignItems: 'center'
     },
     actionBtnText: {
-        color: '#007BFF',
         fontWeight: '600'
     },
     clearBtn: {
-        backgroundColor: '#dc3545',
         padding: 12,
         borderRadius: 6,
         alignItems: 'center',
@@ -171,25 +180,20 @@ const styles = StyleSheet.create({
         marginBottom: 25
     },
     clearBtnText: {
-        color: 'white',
         fontWeight: 'bold',
         fontSize: 15
     },
     pasteResult: {
-        backgroundColor: '#fff',
         padding: 15,
         borderRadius: 8,
         borderWidth: 1,
-        borderColor: '#ddd'
     },
     pasteLabel: {
         fontSize: 14,
-        color: '#666',
         marginBottom: 5
     },
     pastedText: {
       fontSize: 16,
-      color: '#333',
       fontWeight: '500'
     }
 })

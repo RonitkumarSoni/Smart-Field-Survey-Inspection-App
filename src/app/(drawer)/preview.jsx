@@ -3,15 +3,17 @@ import { View, Text, ScrollView, Pressable, Alert, Image, StyleSheet } from 'rea
 import { useRouter } from 'expo-router'
 import { useSurveys } from '../../context/SurveyContext'
 import MyMap from '../../components/MyMap'
+import { useTheme } from '../../context/ThemeContext'
 
 export default function SurveyPreview() {
   const router = useRouter()
   const { currentSurvey, submitSurvey } = useSurveys()
+  const { colors, darkMode } = useTheme()
 
   if (!currentSurvey) {
     return (
-      <View style={styles.container}>
-        <Text>No survey selected</Text>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.textMuted }}>No survey selected</Text>
       </View>
     )
   }
@@ -28,42 +30,42 @@ export default function SurveyPreview() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Preview Survey</Text>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Preview Survey</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.label}>Site Name: {currentSurvey.siteName}</Text>
-        <Text style={styles.label}>Client: {currentSurvey.clientName}</Text>
-        <Text style={styles.label}>Description: {currentSurvey.description}</Text>
-        <Text style={styles.label}>Priority: {currentSurvey.priority}</Text>
-        <Text style={styles.label}>Date: {currentSurvey.date}</Text>
+      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
+        <Text style={[styles.label, { color: colors.text }]}>Site Name: {currentSurvey.siteName}</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Client: {currentSurvey.clientName}</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Description: {currentSurvey.description}</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Priority: {currentSurvey.priority}</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Date: {currentSurvey.date}</Text>
       </View>
 
       {(currentSurvey.contactName || currentSurvey.contactPhone) && (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Contact Details</Text>
-          {currentSurvey.contactName ? <Text style={styles.label}>Name: {currentSurvey.contactName}</Text> : null}
-          {currentSurvey.contactPhone ? <Text style={styles.label}>Phone: {currentSurvey.contactPhone}</Text> : null}
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
+          <Text style={[styles.sectionTitle, { color: darkMode ? colors.text : '#007BFF' }]}>Contact Details</Text>
+          {currentSurvey.contactName ? <Text style={[styles.label, { color: colors.text }]}>Name: {currentSurvey.contactName}</Text> : null}
+          {currentSurvey.contactPhone ? <Text style={[styles.label, { color: colors.text }]}>Phone: {currentSurvey.contactPhone}</Text> : null}
         </View>
       )}
 
       {currentSurvey.notes && (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Notes</Text>
-          <Text style={styles.label}>{currentSurvey.notes}</Text>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
+          <Text style={[styles.sectionTitle, { color: darkMode ? colors.text : '#007BFF' }]}>Notes</Text>
+          <Text style={[styles.label, { color: colors.text }]}>{currentSurvey.notes}</Text>
         </View>
       )}
 
       {currentSurvey.photo && (
-        <View style={styles.card}>
-          <Text style={styles.label}>Photo:</Text>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
+          <Text style={[styles.label, { color: colors.text }]}>Photo:</Text>
           <Image source={{ uri: currentSurvey.photo }} style={styles.photo} />
         </View>
       )}
 
       {currentSurvey.latitude && currentSurvey.longitude && (
-        <View style={styles.card}>
-          <Text style={styles.label}>Location Map:</Text>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
+          <Text style={[styles.label, { color: colors.text }]}>Location Map:</Text>
           <MyMap
             latitude={parseFloat(currentSurvey.latitude)}
             longitude={parseFloat(currentSurvey.longitude)}
@@ -73,17 +75,35 @@ export default function SurveyPreview() {
       )}
 
       <View style={styles.buttonRow}>
-        <Pressable style={styles.btnEdit} onPress={handleEdit}>
-          <Text style={styles.btnText}>Edit Survey</Text>
+        <Pressable 
+          style={[
+            styles.btnEdit, 
+            darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border } : { backgroundColor: '#ffc107' }
+          ]} 
+          onPress={handleEdit}
+        >
+          <Text style={[styles.btnText, { color: darkMode ? colors.textMuted : 'white' }]}>Edit Survey</Text>
         </Pressable>
 
-        <Pressable style={styles.btnSubmit} onPress={handleSubmit}>
-          <Text style={styles.btnText}>Submit Survey</Text>
+        <Pressable 
+          style={[
+            styles.btnSubmit, 
+            darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.primary } : { backgroundColor: '#28a745' }
+          ]} 
+          onPress={handleSubmit}
+        >
+          <Text style={[styles.btnText, { color: darkMode ? colors.primary : 'white' }]}>Submit Survey</Text>
         </Pressable>
       </View>
       
-      <Pressable style={styles.btnBack} onPress={() => router.back()}>
-        <Text style={styles.btnText}>Go Back</Text>
+      <Pressable 
+        style={[
+          styles.btnBack, 
+          darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border } : { backgroundColor: '#007BFF' }
+        ]} 
+        onPress={() => router.back()}
+      >
+        <Text style={[styles.btnText, { color: darkMode ? colors.textMuted : 'white' }]}>Go Back</Text>
       </Pressable>
       
       <View style={{ height: 50 }} />
