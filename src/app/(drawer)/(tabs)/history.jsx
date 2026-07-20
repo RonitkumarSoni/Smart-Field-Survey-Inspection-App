@@ -1,25 +1,30 @@
 import React, { useState } from 'react'
-import { View, Text, FlatList, TextInput, Pressable, Alert, StyleSheet } from 'react-native'
+import { View, FlatList, StyleSheet, Platform, Pressable } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useSurveys } from '../../../context/SurveyContext'
 import { useTheme } from '../../../context/ThemeContext'
+import { Searchbar, Chip, Text, IconButton, Dialog, Portal, Button } from 'react-native-paper'
+import { LinearGradient } from 'expo-linear-gradient'
+import { Ionicons } from '@expo/vector-icons'
 
 export default function SurveyHistory() {
   const router = useRouter()
   const { surveys, deleteSurvey, setCurrentSurvey } = useSurveys()
   const [searchText, setSearchText] = useState('')
   const [filterPriority, setFilterPriority] = useState('All')
+  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false)
+  const [deleteId, setDeleteId] = useState(null)
   const { colors, darkMode } = useTheme()
 
-  const handleDelete = (id) => {
-    Alert.alert(
-      'Delete',
-      'Delete this survey?',
-      [
-        { text: 'No' },
-        { text: 'Yes', onPress: () => deleteSurvey(id) }
-      ]
-    )
+  const confirmDelete = (id) => {
+    setDeleteId(id)
+    setDeleteDialogVisible(true)
+  }
+
+  const handleDelete = () => {
+    if (deleteId) deleteSurvey(deleteId)
+    setDeleteDialogVisible(false)
+    setDeleteId(null)
   }
 
   const handleView = (survey) => {
@@ -33,114 +38,147 @@ export default function SurveyHistory() {
     return colors.success
   }
 
-  const renderSurveyItem = ({ item }) => {
-    if (searchText && !item.siteName.toLowerCase().includes(searchText.toLowerCase()) && !item.clientName.toLowerCase().includes(searchText.toLowerCase())) {
-      return null
-    }
-    
-    if (filterPriority !== 'All' && item.priority !== filterPriority) {
-      return null
-    }
+  const getStatusColor = (status) => {
+    return status === 'submitted' ? colors.statusSubmitted : colors.statusDraft
+  }
 
-    return (
-      <View style={[
-        styles.card, 
-        { 
-          backgroundColor: colors.card, 
-          borderColor: colors.border,
-        }
-      ]}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={[styles.title, { color: colors.text, marginBottom: 0 }]}>{item.siteName}</Text>
-          {darkMode ? (
-            <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
-              <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: 'bold' }}>{item.priority}</Text>
-            </View>
-          ) : (
-            <View style={{ backgroundColor: getPriorityColor(item.priority) + '22', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
-              <Text style={{ color: getPriorityColor(item.priority), fontSize: 10, fontWeight: 'bold' }}>{item.priority}</Text>
-            </View>
-          )}
+  const filteredSurveys = surveys.filter(item => {
+    const matchesSearch = !searchText || 
+      item.siteName.toLowerCase().includes(searchText.toLowerCase()) || 
+      item.clientName.toLowerCase().includes(searchText.toLowerCase())
+    const matchesPriority = filterPriority === 'All' || item.priority === filterPriority
+    return matchesSearch && matchesPriority
+  })
+
+  const renderSurveyItem = ({ item }) => (
+    <Pressable 
+      style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+      onPress={() => handleView(item)}
+      android_ripple={{ color: colors.primary + '10' }}
+    >
+      <View style={[styles.priorityStrip, { backgroundColor: getPriorityColor(item.priority) }]} />
+      <View style={styles.cardContent}>
+        <View style={styles.cardTop}>
+          <View style={{ flex: 1 }}>
+            <Text variant="titleMedium" style={{ color: colors.text, fontWeight: '700' }} numberOfLines={1}>
+              {item.siteName}
+            </Text>
+            <Text variant="bodySmall" style={{ color: colors.textMuted, marginTop: 2 }}>
+              {item.clientName} • {item.date}
+            </Text>
+          </View>
+          <View style={[styles.statusChip, { backgroundColor: getStatusColor(item.status) + '20' }]}>
+            <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
+            <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+              {item.status === 'submitted' ? 'Submitted' : 'Draft'}
+            </Text>
+          </View>
         </View>
-        <Text style={{ color: colors.textMuted, marginTop: 4 }}>Client: {item.clientName}</Text>
-        <Text style={{ color: colors.textMuted }}>Date: {item.date}</Text>
-        {!darkMode && <Text style={{ color: colors.textMuted }}>Priority: {item.priority}</Text>}
-        
-        <View style={styles.row}>
-          <Pressable 
-            style={[
-              styles.btnBlue, 
-              darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.primary } : { backgroundColor: colors.primary }
-            ]} 
-            onPress={() => handleView(item)}
-          >
-            <Text style={[styles.btnText, { color: darkMode ? colors.primary : 'white' }]}>View</Text>
-          </Pressable>
-          <Pressable 
-            style={[
-              styles.btnRed, 
-              darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border } : { backgroundColor: colors.danger }
-            ]} 
-            onPress={() => handleDelete(item.id)}
-          >
-            <Text style={[styles.btnText, { color: darkMode ? colors.textMuted : 'white' }]}>Delete</Text>
-          </Pressable>
+
+        <View style={styles.cardBottom}>
+          <View style={[styles.priorityChip, { backgroundColor: getPriorityColor(item.priority) + '18' }]}>
+            <Text style={{ color: getPriorityColor(item.priority), fontSize: 11, fontWeight: '700' }}>
+              {item.priority}
+            </Text>
+          </View>
+          <View style={styles.cardActions}>
+            <IconButton
+              icon="eye-outline"
+              size={20}
+              iconColor={colors.primary}
+              onPress={() => handleView(item)}
+              style={styles.iconBtn}
+            />
+            <IconButton
+              icon="delete-outline"
+              size={20}
+              iconColor={colors.danger}
+              onPress={() => confirmDelete(item.id)}
+              style={styles.iconBtn}
+            />
+          </View>
         </View>
       </View>
-    )
-  }
+    </Pressable>
+  )
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
-        <Text style={[styles.headerText, { color: colors.headerText }]}>Survey History</Text>
-      </View>
+      {/* Gradient Header */}
+      <LinearGradient
+        colors={colors.gradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
 
-      <View style={styles.search}>
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
-          placeholder="Search by Site or Client..."
-          placeholderTextColor={colors.textMuted}
+        <Text variant="headlineSmall" style={styles.headerTitle}>Survey History</Text>
+        <Text style={styles.headerSub}>{surveys.length} total surveys</Text>
+      </LinearGradient>
+
+      {/* Search & Filter */}
+      <View style={styles.searchSection}>
+        <Searchbar
+          placeholder="Search by site or client..."
           value={searchText}
           onChangeText={setSearchText}
+          style={[styles.searchbar, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+          inputStyle={{ fontSize: 14 }}
+          elevation={0}
         />
-        <View style={styles.filterRow}>
-          <Text style={[styles.filterLabel, { color: colors.text }]}>Priority: </Text>
-          {['All', 'High', 'Medium', 'Low'].map(p => {
-            const isActive = filterPriority === p
-            return (
-              <Pressable 
-                key={p} 
-                style={[
-                  isActive ? styles.filterBtnActive : styles.filterBtn, 
-                  isActive ? { backgroundColor: colors.primary, borderColor: colors.primary } : { borderColor: colors.border }
-                ]} 
-                onPress={() => setFilterPriority(p)}
-              >
-                <Text 
-                  style={[
-                    isActive ? styles.filterTextActive : styles.filterText, 
-                    { color: isActive ? 'white' : colors.textMuted }
-                  ]}
-                >
-                  {p}
-                </Text>
-              </Pressable>
-            )
-          })}
+        <View style={styles.chipRow}>
+          {['All', 'High', 'Medium', 'Low'].map(p => (
+            <Chip
+              key={p}
+              selected={filterPriority === p}
+              onPress={() => setFilterPriority(p)}
+              style={[
+                styles.chip,
+                filterPriority === p 
+                  ? { backgroundColor: colors.primary } 
+                  : { backgroundColor: colors.card, borderColor: colors.cardBorder, borderWidth: 1 }
+              ]}
+              textStyle={{ 
+                color: filterPriority === p ? '#FFFFFF' : colors.textSecondary, 
+                fontSize: 12, 
+                fontWeight: '600' 
+              }}
+              showSelectedCheck={false}
+            >
+              {p}
+            </Chip>
+          ))}
         </View>
       </View>
 
       <FlatList
-        data={surveys}
+        data={filteredSurveys}
         keyExtractor={(item) => item.id}
         renderItem={renderSurveyItem}
+        contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <View style={{ padding: 20, alignItems: 'center' }}>
-            <Text style={{ color: colors.textMuted }}>No surveys found</Text>
+          <View style={styles.emptyState}>
+            <Ionicons name="search-outline" size={48} color={colors.textMuted} />
+            <Text style={[styles.emptyText, { color: colors.textMuted }]}>No surveys found</Text>
           </View>
         }
       />
+
+      {/* Delete Dialog */}
+      <Portal>
+        <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)} style={{ borderRadius: 16 }}>
+          <Dialog.Icon icon="alert-circle" color={colors.danger} />
+          <Dialog.Title style={{ textAlign: 'center' }}>Delete Survey</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium" style={{ textAlign: 'center' }}>This action cannot be undone. Are you sure?</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setDeleteDialogVisible(false)}>Cancel</Button>
+            <Button onPress={handleDelete} textColor={colors.danger}>Delete</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   )
 }
@@ -150,80 +188,106 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: 20,
-    paddingTop: 35,
-    paddingBottom: 25,
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 56 : 40,
+    paddingBottom: 28,
     alignItems: 'center',
+    gap: 4,
   },
-  headerText: {
-    fontSize: 22,
-    fontWeight: 'bold',
+  headerTitle: {
+    color: '#FFFFFF',
+    fontWeight: '800',
   },
-  search: {
-    padding: 15,
+  headerSub: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 13,
   },
-  input: {
+  searchSection: {
+    padding: 16,
+    paddingBottom: 0,
+  },
+  searchbar: {
+    borderRadius: 14,
     borderWidth: 1,
-    borderRadius: 6,
-    padding: 10,
-    fontSize: 16,
   },
-  card: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 15,
-    marginHorizontal: 15,
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  row: {
+  chipRow: {
     flexDirection: 'row',
+    gap: 8,
     marginTop: 12,
   },
-  btnBlue: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    marginRight: 10,
+  chip: {
+    borderRadius: 10,
   },
-  btnRed: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
+  card: {
+    borderRadius: 14,
+    marginBottom: 10,
+    flexDirection: 'row',
+    overflow: 'hidden',
+    borderWidth: 1,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
   },
-  btnText: {
-    fontWeight: '600',
+  priorityStrip: {
+    width: 4,
   },
-  filterRow: {
+  cardContent: {
+    flex: 1,
+    padding: 14,
+  },
+  cardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 10,
+  },
+  statusChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    gap: 4,
+    marginLeft: 8,
   },
-  filterLabel: {
-    fontWeight: 'bold',
-    marginRight: 10,
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
-  filterBtn: {
-    borderWidth: 1,
-    borderRadius: 15,
-    paddingVertical: 4,
+  statusText: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  cardBottom: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  priorityChip: {
     paddingHorizontal: 10,
-    marginRight: 6,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
-  filterBtnActive: {
-    borderWidth: 1,
-    borderRadius: 15,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    marginRight: 6,
+  cardActions: {
+    flexDirection: 'row',
   },
-  filterText: {
-    fontSize: 12,
+  iconBtn: {
+    margin: 0,
   },
-  filterTextActive: {
-    fontSize: 12,
-  }
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 12,
+  },
 })

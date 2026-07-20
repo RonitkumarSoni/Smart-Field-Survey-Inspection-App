@@ -39,6 +39,7 @@ export function SurveyProvider({ children }) {
   ])
 
   const [currentSurvey, setCurrentSurvey] = useState(null)
+  const [userAvatar, setUserAvatar] = useState(null)
 
   // add a new survey
   const addSurvey = (survey) => {
@@ -73,6 +74,8 @@ export function SurveyProvider({ children }) {
       surveys,
       currentSurvey,
       setCurrentSurvey,
+      userAvatar,
+      setUserAvatar,
       addSurvey,
       deleteSurvey,
       updateSurvey,

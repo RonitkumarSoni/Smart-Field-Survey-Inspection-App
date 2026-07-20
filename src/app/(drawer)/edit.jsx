@@ -1,172 +1,349 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, TextInput, Pressable, ScrollView, Alert, StyleSheet } from 'react-native'
+import { View, ScrollView, StyleSheet, Platform, Pressable, Image } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useSurveys } from '../../context/SurveyContext'
 import { useTheme } from '../../context/ThemeContext'
+import { TextInput, Button, Text, SegmentedButtons, HelperText, Snackbar } from 'react-native-paper'
+import { LinearGradient } from 'expo-linear-gradient'
+import { Ionicons } from '@expo/vector-icons'
+import { useForm, Controller } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import DateTimePicker from '@react-native-community/datetimepicker'
+import * as ImagePicker from 'expo-image-picker'
+
+const editSchema = z.object({
+  siteName: z.string().min(1, 'Site Name is required').min(2, 'Must be at least 2 characters'),
+  clientName: z.string().min(1, 'Client Name is required').min(2, 'Must be at least 2 characters'),
+  description: z.string().optional(),
+  priority: z.enum(['High', 'Medium', 'Low']),
+  date: z.string().min(1, 'Date is required'),
+})
 
 export default function EditSurvey() {
   const router = useRouter()
   const { currentSurvey, updateSurvey, setCurrentSurvey } = useSurveys()
   const { colors, darkMode } = useTheme()
+  const [snackbarVisible, setSnackbarVisible] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [selectedImage, setSelectedImage] = useState(null)
 
-  const [siteName, setSiteName] = useState('')
-  const [clientName, setClientName] = useState('')
-  const [description, setDescription] = useState('')
-  const [priority, setPriority] = useState('Medium')
-  const [date, setDate] = useState('')
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(editSchema),
+    defaultValues: {
+      siteName: '',
+      clientName: '',
+      description: '',
+      priority: 'Medium',
+      date: '',
+    },
+  })
 
   useEffect(() => {
     if (currentSurvey) {
-        setSiteName(currentSurvey.siteName || '')
-        setClientName(currentSurvey.clientName || '')
-        setDescription(currentSurvey.description || '')
-        setPriority(currentSurvey.priority || 'Medium')
-        setDate(currentSurvey.date || '')
-    } else {
-        Alert.alert("Error", "No survey selected for editing.", [
-            { text: "Go Back", onPress: () => router.back() }
-        ])
+      reset({
+        siteName: currentSurvey.siteName || '',
+        clientName: currentSurvey.clientName || '',
+        description: currentSurvey.description || '',
+        priority: currentSurvey.priority || 'Medium',
+        date: currentSurvey.date || '',
+      })
+      setSelectedImage(currentSurvey.photo || null)
     }
-  }, [currentSurvey])
+  }, [currentSurvey, reset])
 
-  const handleUpdate = () => {
-    if (siteName === '' || clientName === '' || date === '') {
-      Alert.alert('Error', 'Site Name, Client Name and Date are required')
-      return
-    }
+  if (!currentSurvey) {
+    return (
+      <View style={[styles.emptyContainer, { backgroundColor: colors.background }]}>
+        <View style={[styles.emptyIcon, { backgroundColor: colors.chipBg }]}>
+          <Ionicons name="create-outline" size={40} color={colors.primary} />
+        </View>
+        <Text variant="titleMedium" style={{ color: colors.text, fontWeight: '700', marginTop: 16 }}>
+          No Survey Selected
+        </Text>
+        <Button
+          mode="contained"
+          onPress={() => router.back()}
+          style={{ marginTop: 20, borderRadius: 12 }}
+          buttonColor={colors.primary}
+        >
+          Go Back
+        </Button>
+      </View>
+    )
+  }
 
-    const updatedData = {
-      ...currentSurvey,
-      siteName,
-      clientName,
-      description,
-      priority,
-      date,
-    }
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (status !== 'granted') return
 
-    if (updateSurvey) {
-      updateSurvey(currentSurvey.id, updatedData)
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    })
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri)
     }
+  }
+
+  const formatDate = (date) => {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+  }
+
+  const onSubmit = (data) => {
+    const updatedData = { ...currentSurvey, ...data, photo: selectedImage }
+    if (updateSurvey) updateSurvey(currentSurvey.id, updatedData)
+    if (setCurrentSurvey) setCurrentSurvey(updatedData)
     
-    if (setCurrentSurvey) {
-      setCurrentSurvey(updatedData)
-    }
-
-    Alert.alert('Success', 'Survey updated successfully', [
-      { text: 'OK', onPress: () => router.back() }
-    ])
+    setSnackbarVisible(true)
+    setTimeout(() => {
+      router.back()
+    }, 1500)
   }
-
-  const getPriorityStyle = (p, isActive) => {
-    if (darkMode) {
-      if (isActive) {
-        return { backgroundColor: 'rgba(255, 255, 255, 0.15)', borderColor: '#ffffff' }
-      }
-      return { backgroundColor: 'transparent', borderColor: 'rgba(255, 255, 255, 0.1)' }
-    }
-    if (isActive) {
-      if (p === 'High') return { backgroundColor: colors.danger, borderColor: colors.danger }
-      if (p === 'Medium') return { backgroundColor: colors.warning, borderColor: colors.warning }
-      return { backgroundColor: colors.success, borderColor: colors.success }
-    } else {
-      if (p === 'High') return { borderColor: colors.danger }
-      if (p === 'Medium') return { borderColor: colors.warning }
-      return { borderColor: colors.success }
-    }
-  }
-
-  const getPriorityTextStyle = (p, isActive) => {
-    if (darkMode) {
-      if (isActive) return { color: '#ffffff' }
-      return { color: '#a0a0a0' }
-    }
-    if (isActive) {
-      return { color: colors.background }
-    } else {
-      if (p === 'High') return { color: colors.danger }
-      if (p === 'Medium') return { color: colors.warning }
-      return { color: colors.success }
-    }
-  }
-
-  if (!currentSurvey) return null;
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: darkMode ? colors.headerBg : colors.warning }]}>
-        <Text style={[styles.headerText, { color: darkMode ? colors.headerText : colors.background }]}>Edit Survey</Text>
-      </View>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        <LinearGradient
+          colors={['#D97706', '#F59E0B']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.header}
+        >
+          <Text variant="headlineSmall" style={styles.headerTitle}>Edit Survey</Text>
+          <Text style={styles.headerSub}>Modify the survey details below</Text>
+        </LinearGradient>
 
-      <View style={styles.form}>
-        <Text style={[styles.label, { color: colors.text }]}>Site Name</Text>
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
-          value={siteName}
-          onChangeText={setSiteName}
-        />
+        <View style={styles.form}>
+          <Controller
+            control={control}
+            name="siteName"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <View>
+                <TextInput
+                  label="Site Name"
+                  mode="outlined"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  error={!!errors.siteName}
+                  style={styles.input}
+                  outlineColor={colors.border}
+                  activeOutlineColor={colors.primary}
+                  outlineStyle={{ borderRadius: 12 }}
+                />
+                <HelperText type="error" visible={!!errors.siteName}>
+                  {errors.siteName?.message}
+                </HelperText>
+              </View>
+            )}
+          />
 
-        <Text style={[styles.label, { color: colors.text }]}>Client Name</Text>
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
-          value={clientName}
-          onChangeText={setClientName}
-        />
+          <Controller
+            control={control}
+            name="clientName"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <View>
+                <TextInput
+                  label="Client Name"
+                  mode="outlined"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  error={!!errors.clientName}
+                  style={styles.input}
+                  outlineColor={colors.border}
+                  activeOutlineColor={colors.primary}
+                  outlineStyle={{ borderRadius: 12 }}
+                />
+                <HelperText type="error" visible={!!errors.clientName}>
+                  {errors.clientName?.message}
+                </HelperText>
+              </View>
+            )}
+          />
 
-        <Text style={[styles.label, { color: colors.text }]}>Description</Text>
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
-          value={description}
-          onChangeText={setDescription}
-        />
+          <Controller
+            control={control}
+            name="description"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <View>
+                <TextInput
+                  label="Description"
+                  mode="outlined"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  multiline
+                  numberOfLines={3}
+                  style={styles.input}
+                  outlineColor={colors.border}
+                  activeOutlineColor={colors.primary}
+                  outlineStyle={{ borderRadius: 12 }}
+                />
+                <HelperText type="error" visible={!!errors.description}>
+                  {errors.description?.message}
+                </HelperText>
+              </View>
+            )}
+          />
 
-        <Text style={[styles.label, { color: colors.text }]}>Priority</Text>
-        <View style={styles.row}>
-          {['High', 'Medium', 'Low'].map(p => {
-            const isActive = priority === p
-            return (
-              <Pressable 
-                key={p}
-                style={[
-                  styles.btn, 
-                  getPriorityStyle(p, isActive),
-                ]} 
-                onPress={() => setPriority(p)}
-              >
-                <Text style={[styles.text, getPriorityTextStyle(p, isActive)]}>{p}</Text>
-              </Pressable>
-            )
-          })}
-        </View>
+          <Text variant="titleSmall" style={[styles.label, { color: colors.text }]}>Priority Level</Text>
+          <Controller
+            control={control}
+            name="priority"
+            render={({ field: { onChange, value } }) => (
+              <SegmentedButtons
+                value={value}
+                onValueChange={onChange}
+                buttons={[
+                  { value: 'High', label: 'High' },
+                  { value: 'Medium', label: 'Medium' },
+                  { value: 'Low', label: 'Low' },
+                ]}
+                style={styles.segmented}
+              />
+            )}
+          />
 
-        <Text style={[styles.label, { color: colors.text }]}>Date</Text>
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
-          value={date}
-          onChangeText={setDate}
-        />
+          {/* Date Picker */}
+          <Controller
+            control={control}
+            name="date"
+            render={({ field: { value } }) => (
+              <View style={{ marginTop: 8 }}>
+                <Pressable onPress={() => setShowDatePicker(true)}>
+                  <View pointerEvents="none">
+                    <TextInput
+                      label="Date"
+                      mode="outlined"
+                      value={value}
+                      editable={false}
+                      right={<TextInput.Icon icon="chevron-down" />}
+                      error={!!errors.date}
+                      style={styles.input}
+                      outlineColor={colors.border}
+                      activeOutlineColor={colors.primary}
+                      outlineStyle={{ borderRadius: 12 }}
+                    />
+                  </View>
+                </Pressable>
+                <HelperText type="error" visible={!!errors.date}>
+                  {errors.date?.message}
+                </HelperText>
 
-        <View style={styles.actionRow}>
-            <Pressable 
-              style={[
-                styles.cancelBtn, 
-                darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border } : { backgroundColor: colors.danger }
-              ]} 
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={value ? new Date(value) : new Date()}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
+                    onChange={(event, selectedDate) => {
+                      setShowDatePicker(Platform.OS === 'ios')
+                      if (selectedDate) {
+                        setValue('date', formatDate(selectedDate))
+                      }
+                    }}
+                    themeVariant={darkMode ? 'dark' : 'light'}
+                  />
+                )}
+                {Platform.OS === 'ios' && showDatePicker && (
+                  <Button
+                    mode="text"
+                    onPress={() => setShowDatePicker(false)}
+                    style={{ alignSelf: 'flex-end' }}
+                    textColor={colors.primary}
+                  >
+                    Done
+                  </Button>
+                )}
+              </View>
+            )}
+          />
+
+          {/* Image Upload */}
+          <Text variant="titleSmall" style={[styles.label, { color: colors.text, marginTop: 4 }]}>Site Photo</Text>
+          {selectedImage ? (
+            <View style={[styles.imageCard, { borderColor: colors.cardBorder }]}>
+              <Image source={{ uri: selectedImage }} style={styles.imagePreview} />
+              <View style={styles.imageActions}>
+                <Button
+                  mode="outlined"
+                  onPress={pickImage}
+                  style={{ flex: 1, borderRadius: 10, borderColor: colors.primary }}
+                  textColor={colors.primary}
+                  compact
+                >
+                  Change
+                </Button>
+                <Button
+                  mode="outlined"
+                  onPress={() => setSelectedImage(null)}
+                  style={{ flex: 1, borderRadius: 10, borderColor: colors.danger }}
+                  textColor={colors.danger}
+                  compact
+                >
+                  Remove
+                </Button>
+              </View>
+            </View>
+          ) : (
+            <Pressable
+              style={[styles.uploadArea, { borderColor: colors.border, backgroundColor: colors.card }]}
+              onPress={pickImage}
+            >
+              <Ionicons name="image-outline" size={32} color={colors.textMuted} />
+              <Text variant="bodyMedium" style={{ color: colors.textMuted, marginTop: 8, fontWeight: '600' }}>
+                Tap to select a photo
+              </Text>
+            </Pressable>
+          )}
+
+          <View style={styles.actionRow}>
+            <Button
+              mode="outlined"
               onPress={() => router.back()}
+              style={[styles.actionBtn, { borderColor: colors.danger }]}
+              textColor={colors.danger}
+              contentStyle={{ paddingVertical: 4 }}
+              labelStyle={{ fontWeight: '700' }}
             >
-                <Text style={[styles.submitText, { color: darkMode ? colors.textMuted : 'white' }]}>Cancel</Text>
-            </Pressable>
-            <Pressable 
-              style={[
-                styles.submitBtn, 
-                darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.primary } : { backgroundColor: colors.success }
-              ]} 
-              onPress={handleUpdate}
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              onPress={handleSubmit(onSubmit)}
+              style={[styles.actionBtn]}
+              buttonColor={colors.success}
+              contentStyle={{ paddingVertical: 4 }}
+              labelStyle={{ fontWeight: '700' }}
             >
-                <Text style={[styles.submitText, { color: darkMode ? colors.primary : 'white' }]}>Update</Text>
-            </Pressable>
+              Update
+            </Button>
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={2000}
+        style={{ backgroundColor: colors.success, borderRadius: 12, marginBottom: 80 }}
+      >
+        Survey updated successfully
+      </Snackbar>
+    </View>
   )
 }
 
@@ -174,64 +351,80 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
-    paddingTop: 35,
-    paddingBottom: 25,
+  },
+  emptyIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  headerText: {
-    fontSize: 22,
-    fontWeight: 'bold',
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 56 : 40,
+    paddingBottom: 28,
+    alignItems: 'center',
+    gap: 6,
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  headerSub: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 13,
   },
   form: {
     padding: 20,
-  },
-  label: {
-    fontSize: 15,
-    fontWeight: '600',
-    marginTop: 12,
-    marginBottom: 6,
+    marginTop: -8,
   },
   input: {
-    borderWidth: 1,
-    borderRadius: 6,
-    padding: 12,
-    fontSize: 16,
+    marginBottom: 0,
   },
-  row: {
+  label: {
+    marginBottom: 10,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+  segmented: {
+    marginBottom: 4,
+  },
+  uploadArea: {
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderRadius: 14,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  imageCard: {
+    borderWidth: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  imagePreview: {
+    width: '100%',
+    height: 200,
+  },
+  imageActions: {
     flexDirection: 'row',
-    marginTop: 5,
+    gap: 10,
+    padding: 12,
   },
   actionRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 25,
+    gap: 10,
+    marginTop: 16,
   },
-  btn: {
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginRight: 10,
+  actionBtn: {
+    flex: 1,
+    borderRadius: 14,
   },
-  text: {
-    fontWeight: '500',
-  },
-  cancelBtn: {
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    width: '48%'
-  },
-  submitBtn: {
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    width: '48%'
-  },
-  submitText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  }
 })

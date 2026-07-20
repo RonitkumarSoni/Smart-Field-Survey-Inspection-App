@@ -1,7 +1,10 @@
 import React from 'react'
-import { View, Text, ScrollView, Pressable, Alert, Image, StyleSheet } from 'react-native'
+import { View, ScrollView, Image, StyleSheet, Platform } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useSurveys } from '../../context/SurveyContext'
+import { Text, Button, Chip, Divider, Snackbar } from 'react-native-paper'
+import { LinearGradient } from 'expo-linear-gradient'
+import { Ionicons } from '@expo/vector-icons'
 import MyMap from '../../components/MyMap'
 import { useTheme } from '../../context/ThemeContext'
 
@@ -9,178 +12,299 @@ export default function SurveyPreview() {
   const router = useRouter()
   const { currentSurvey, submitSurvey } = useSurveys()
   const { colors, darkMode } = useTheme()
+  const [snackbarVisible, setSnackbarVisible] = React.useState(false)
 
   if (!currentSurvey) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.textMuted }}>No survey selected</Text>
+      <View style={[styles.emptyContainer, { backgroundColor: colors.background }]}>
+        <View style={[styles.emptyIcon, { backgroundColor: colors.chipBg }]}>
+          <Ionicons name="document-outline" size={40} color={colors.primary} />
+        </View>
+        <Text variant="titleMedium" style={{ color: colors.text, fontWeight: '700', marginTop: 16 }}>
+          No Survey Selected
+        </Text>
+        <Text variant="bodyMedium" style={{ color: colors.textMuted, marginTop: 6 }}>
+          Go back and select a survey to preview
+        </Text>
+        <Button
+          mode="contained"
+          onPress={() => router.back()}
+          style={{ marginTop: 20, borderRadius: 12 }}
+          buttonColor={colors.primary}
+          icon="arrow-left"
+        >
+          Go Back
+        </Button>
       </View>
     )
   }
 
   const handleSubmit = () => {
     submitSurvey(currentSurvey.id)
-    Alert.alert('Success', 'Survey submitted', [
-      { text: 'OK', onPress: () => router.push('/(drawer)/(tabs)/history') }
-    ])
+    setSnackbarVisible(true)
+    setTimeout(() => {
+      router.push('/(drawer)/(tabs)/history')
+    }, 1500)
   }
 
-  const handleEdit = () => {
-    router.push('/(drawer)/edit')
+  const getPriorityColor = (p) => {
+    if (p === 'High') return colors.danger
+    if (p === 'Medium') return colors.warning
+    return colors.success
+  }
+
+  const getStatusColor = (s) => {
+    return s === 'submitted' ? colors.statusSubmitted : colors.statusDraft
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Preview Survey</Text>
-
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
-        <Text style={[styles.label, { color: colors.text }]}>Site Name: {currentSurvey.siteName}</Text>
-        <Text style={[styles.label, { color: colors.text }]}>Client: {currentSurvey.clientName}</Text>
-        <Text style={[styles.label, { color: colors.text }]}>Description: {currentSurvey.description}</Text>
-        <Text style={[styles.label, { color: colors.text }]}>Priority: {currentSurvey.priority}</Text>
-        <Text style={[styles.label, { color: colors.text }]}>Date: {currentSurvey.date}</Text>
-      </View>
-
-      {(currentSurvey.contactName || currentSurvey.contactPhone) && (
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
-          <Text style={[styles.sectionTitle, { color: darkMode ? colors.text : '#007BFF' }]}>Contact Details</Text>
-          {currentSurvey.contactName ? <Text style={[styles.label, { color: colors.text }]}>Name: {currentSurvey.contactName}</Text> : null}
-          {currentSurvey.contactPhone ? <Text style={[styles.label, { color: colors.text }]}>Phone: {currentSurvey.contactPhone}</Text> : null}
-        </View>
-      )}
-
-      {currentSurvey.notes && (
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
-          <Text style={[styles.sectionTitle, { color: darkMode ? colors.text : '#007BFF' }]}>Notes</Text>
-          <Text style={[styles.label, { color: colors.text }]}>{currentSurvey.notes}</Text>
-        </View>
-      )}
-
-      {currentSurvey.photo && (
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
-          <Text style={[styles.label, { color: colors.text }]}>Photo:</Text>
-          <Image source={{ uri: currentSurvey.photo }} style={styles.photo} />
-        </View>
-      )}
-
-      {currentSurvey.latitude && currentSurvey.longitude && (
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }]}>
-          <Text style={[styles.label, { color: colors.text }]}>Location Map:</Text>
-          <MyMap
-            latitude={parseFloat(currentSurvey.latitude)}
-            longitude={parseFloat(currentSurvey.longitude)}
-            style={styles.map}
-          />
-        </View>
-      )}
-
-      <View style={styles.buttonRow}>
-        <Pressable 
-          style={[
-            styles.btnEdit, 
-            darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border } : { backgroundColor: '#ffc107' }
-          ]} 
-          onPress={handleEdit}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        {/* Gradient Header */}
+        <LinearGradient
+          colors={colors.gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.header}
         >
-          <Text style={[styles.btnText, { color: darkMode ? colors.textMuted : 'white' }]}>Edit Survey</Text>
-        </Pressable>
 
-        <Pressable 
-          style={[
-            styles.btnSubmit, 
-            darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.primary } : { backgroundColor: '#28a745' }
-          ]} 
-          onPress={handleSubmit}
-        >
-          <Text style={[styles.btnText, { color: darkMode ? colors.primary : 'white' }]}>Submit Survey</Text>
-        </Pressable>
-      </View>
-      
-      <Pressable 
-        style={[
-          styles.btnBack, 
-          darkMode ? { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border } : { backgroundColor: '#007BFF' }
-        ]} 
-        onPress={() => router.back()}
+          <Text variant="headlineSmall" style={styles.headerTitle}>Survey Preview</Text>
+        </LinearGradient>
+
+        <View style={styles.content}>
+          {/* Status + Priority Row */}
+          <View style={styles.chipRow}>
+            <Chip 
+              icon={() => <View style={[styles.chipDot, { backgroundColor: getStatusColor(currentSurvey.status) }]} />}
+              style={[styles.chip, { backgroundColor: getStatusColor(currentSurvey.status) + '20' }]}
+              textStyle={{ color: getStatusColor(currentSurvey.status), fontWeight: '700', fontSize: 12 }}
+            >
+              {currentSurvey.status === 'submitted' ? 'Submitted' : 'Draft'}
+            </Chip>
+            <Chip 
+              style={[styles.chip, { backgroundColor: getPriorityColor(currentSurvey.priority) + '18' }]}
+              textStyle={{ color: getPriorityColor(currentSurvey.priority), fontWeight: '700', fontSize: 12 }}
+            >
+              {currentSurvey.priority} Priority
+            </Chip>
+          </View>
+
+          {/* Survey Details Card */}
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <View style={styles.cardHeader}>
+              <Ionicons name="document-text" size={20} color={colors.primary} />
+              <Text variant="titleMedium" style={{ color: colors.text, fontWeight: '700' }}>Survey Details</Text>
+            </View>
+            <Divider style={{ backgroundColor: colors.border, marginBottom: 12 }} />
+            {[
+              { label: 'Site Name', value: currentSurvey.siteName },
+              { label: 'Client', value: currentSurvey.clientName },
+              { label: 'Description', value: currentSurvey.description || 'No description' },
+              { label: 'Date', value: currentSurvey.date },
+            ].map((item, i) => (
+              <View key={i} style={styles.detailRow}>
+                <Text variant="labelMedium" style={{ color: colors.textMuted, width: 90 }}>{item.label}</Text>
+                <Text variant="bodyMedium" style={{ color: colors.text, fontWeight: '500', flex: 1 }}>{item.value}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Contact Card */}
+          {(currentSurvey.contactName || currentSurvey.contactPhone) && (
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="person" size={20} color={colors.primary} />
+                <Text variant="titleMedium" style={{ color: colors.text, fontWeight: '700' }}>Contact</Text>
+              </View>
+              <Divider style={{ backgroundColor: colors.border, marginBottom: 12 }} />
+              {currentSurvey.contactName && (
+                <View style={styles.detailRow}>
+                  <Text variant="labelMedium" style={{ color: colors.textMuted, width: 90 }}>Name</Text>
+                  <Text variant="bodyMedium" style={{ color: colors.text, fontWeight: '500' }}>{currentSurvey.contactName}</Text>
+                </View>
+              )}
+              {currentSurvey.contactPhone && (
+                <View style={styles.detailRow}>
+                  <Text variant="labelMedium" style={{ color: colors.textMuted, width: 90 }}>Phone</Text>
+                  <Text variant="bodyMedium" style={{ color: colors.text, fontWeight: '500' }}>{currentSurvey.contactPhone}</Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Notes */}
+          {currentSurvey.notes && (
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="chatbox-ellipses" size={20} color={colors.primary} />
+                <Text variant="titleMedium" style={{ color: colors.text, fontWeight: '700' }}>Notes</Text>
+              </View>
+              <Divider style={{ backgroundColor: colors.border, marginBottom: 12 }} />
+              <Text variant="bodyMedium" style={{ color: colors.text, lineHeight: 22 }}>{currentSurvey.notes}</Text>
+            </View>
+          )}
+
+          {/* Photo */}
+          {currentSurvey.photo && (
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="image" size={20} color={colors.primary} />
+                <Text variant="titleMedium" style={{ color: colors.text, fontWeight: '700' }}>Photo</Text>
+              </View>
+              <Image source={{ uri: currentSurvey.photo }} style={styles.photo} />
+            </View>
+          )}
+
+          {/* Map */}
+          {currentSurvey.latitude && currentSurvey.longitude && (
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, overflow: 'hidden' }]}>
+              <View style={[styles.cardHeader, { paddingBottom: 12 }]}>
+                <Ionicons name="map" size={20} color={colors.primary} />
+                <Text variant="titleMedium" style={{ color: colors.text, fontWeight: '700' }}>Location</Text>
+              </View>
+              <MyMap
+                latitude={parseFloat(currentSurvey.latitude)}
+                longitude={parseFloat(currentSurvey.longitude)}
+                style={styles.map}
+              />
+            </View>
+          )}
+
+          {/* Action Buttons */}
+          <View style={styles.actionRow}>
+            <Button
+              mode="outlined"
+              onPress={() => router.push('/(drawer)/edit')}
+              icon="pencil"
+              style={[styles.actionBtn, { borderColor: colors.warning }]}
+              textColor={colors.warning}
+              contentStyle={{ paddingVertical: 4 }}
+              labelStyle={{ fontWeight: '700' }}
+            >
+              Edit
+            </Button>
+            <LinearGradient
+              colors={colors.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.actionBtn, { borderRadius: 14, overflow: 'hidden' }]}
+            >
+              <Button
+                mode="contained"
+                onPress={handleSubmit}
+                icon="check-circle"
+                style={{ backgroundColor: 'transparent' }}
+                contentStyle={{ paddingVertical: 4 }}
+                labelStyle={{ fontWeight: '700' }}
+              >
+                Submit
+              </Button>
+            </LinearGradient>
+          </View>
+
+          <Button
+            mode="text"
+            onPress={() => router.back()}
+            icon="arrow-left"
+            textColor={colors.textMuted}
+            style={{ marginTop: 4 }}
+          >
+            Go Back
+          </Button>
+        </View>
+      </ScrollView>
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={2000}
+        style={{ backgroundColor: colors.success, borderRadius: 12, marginBottom: 80 }}
       >
-        <Text style={[styles.btnText, { color: darkMode ? colors.textMuted : 'white' }]}>Go Back</Text>
-      </Pressable>
-      
-      <View style={{ height: 50 }} />
-    </ScrollView>
+        Survey submitted successfully
+      </Snackbar>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
-    backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    marginTop: 20,
+  emptyIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#007BFF'
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 56 : 40,
+    paddingBottom: 28,
+    alignItems: 'center',
+    gap: 4,
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  content: {
+    padding: 16,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  chip: {
+    borderRadius: 10,
+  },
+  chipDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   card: {
-    backgroundColor: '#fff',
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
+    padding: 16,
+    marginBottom: 12,
   },
-  label: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 6,
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    marginBottom: 10,
   },
   photo: {
     width: '100%',
     height: 200,
-    borderRadius: 6,
+    borderRadius: 12,
+    marginTop: 8,
   },
   map: {
     width: '100%',
     height: 200,
-    marginTop: 10,
-    borderRadius: 6,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
   },
-  buttonRow: {
+  actionRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
+    gap: 10,
+    marginTop: 8,
   },
-  btnEdit: {
-    backgroundColor: '#ffc107',
-    padding: 12,
-    borderRadius: 6,
-    alignItems: 'center',
-    width: '48%'
+  actionBtn: {
+    flex: 1,
+    borderRadius: 14,
   },
-  btnSubmit: {
-    backgroundColor: '#28a745',
-    padding: 12,
-    borderRadius: 6,
-    alignItems: 'center',
-    width: '48%'
-  },
-  btnBack: {
-    backgroundColor: '#007BFF',
-    padding: 12,
-    borderRadius: 6,
-    alignItems: 'center',
-  },
-  btnText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  }
 })
